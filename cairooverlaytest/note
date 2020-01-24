@@ -1,0 +1,10 @@
+https://gist.github.com/cbenhagen/76b24573fa63e7492fb6
+https://github.com/happyleavesaoc/python-snapcast/blob/master/snapcast/client/gstreamer.py
+https://programtalk.com/python-examples/gst.Buffer/
+
+
+sudo apt-get install vdpau-va-driver
+GST_VAAPI_ALL_DRIVERS=1
+gst-inspect-1.0 vaapi
+
+gst-launch-1.0 -v v4l2src device=/dev/video0 ! image/jpeg, width=640, height=480, framerate=25/1 ! jpegdec ! avenc_mpeg2video idct-algo=7 dct-algo=0 bitrate=400000 bitrate-tolerance=8000000 ! udpsink host=192.168.2.241 port=5400 async=false audiotestsrc name=audiosrc ! audio/x-raw, rate=8000, channels=1, format=S16LE ! alawenc hard-resync=true ! rtppcmapay max-ptime=-1 mtu=1400 ! udpsink host=192.168.2.241 port=5800 async=false
