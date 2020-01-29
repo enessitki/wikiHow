@@ -46,8 +46,9 @@ mesh3D = go.Mesh3d(
             showscale=False)
 
 layout = go.Layout(paper_bgcolor='rgb(1,1,1)',
-            title_text='', title_x=0.5,
-                   font_color='white',
+            title_text='', 
+            title_x=0.5,
+            font_color='white',
             width=800,
             height=800,
             scene_camera=dict(eye=dict(x=1.25, y=-1.25, z=1)),
