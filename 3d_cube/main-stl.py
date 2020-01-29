@@ -1,15 +1,12 @@
-import plotly
 import plotly.offline as ply
 import numpy as np
 import plotly.graph_objs as go
 from stl import mesh
 import sys
 import os
-from PyQt5.QtGui import QGuiApplication
-from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWebKitWidgets import QWebView
-import chart_studio.plotly as py
 
 def stl2mesh3d(stl_mesh):
     # stl_mesh is read by nympy-stl from a stl file; it is  an array of faces/triangles (i.e. three 3d points)
@@ -47,9 +44,7 @@ mesh3D = go.Mesh3d(
             intensity=z,
             name='M113',
             showscale=False)
-#print(mesh3D)
 
-#title = "Mesh3d from a STL file<br>menger.html"
 layout = go.Layout(paper_bgcolor='rgb(1,1,1)',
             title_text='', title_x=0.5,
                    font_color='white',
@@ -59,7 +54,6 @@ layout = go.Layout(paper_bgcolor='rgb(1,1,1)',
             scene_xaxis_visible=False,
             scene_yaxis_visible=False,
             scene_zaxis_visible=False)
-#print(layout)
 
 fig = go.Figure(data=[mesh3D], layout=layout)
 
@@ -73,8 +67,7 @@ fig.data[0].update(lightposition=dict(x=3000,
                                       y=3000,
                                       z=10000));
 
-#print (fig)
-#ply.plot(fig, filename='M113')
+ply.plot(fig, filename='M113')
 
 app = QApplication(sys.argv)
 
@@ -84,8 +77,6 @@ local_url = QUrl.fromLocalFile(file_path)
 print(local_url)
 browser.load(local_url)
 
-#val = browser.shape
-#print(val)
-#browser.show()
+browser.show()
 
-#app.exec_()
+app.exec_()
