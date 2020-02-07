@@ -7,7 +7,9 @@ from matplotlib.figure import Figure
 from matplotlib import pyplot
 from stl import mesh
 from mpl_toolkits import mplot3d
-import random
+import math
+import time
+import numpy
 
 
 class Window(QtWidgets.QWidget):
@@ -18,90 +20,86 @@ class Window(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
         self.plot = PlotCanvas()
-        self.resetButton = QtWidgets.QPushButton("Reset")
-        self.resetButton.clicked.connect(self.reset_plot)
+
+        self.rollButton = QtWidgets.QPushButton("roll +10")
+        self.rollButton.clicked.connect(lambda: self.plot.rotate(roll=10))
+
+        self.pitchButton = QtWidgets.QPushButton("pitch + 10")
+        self.pitchButton.clicked.connect(lambda: self.plot.rotate(pitch=10))
+
+        self.yawButton = QtWidgets.QPushButton("yaw + 10")
+        self.yawButton.clicked.connect(lambda: self.plot.rotate(yaw=10))
+
+        self.resetButton = QtWidgets.QPushButton("reset")
+        self.resetButton.clicked.connect(self.plot.reset_rotation)
+
         layout.addWidget(self.plot)
+        layout.addWidget(self.rollButton)
+        layout.addWidget(self.pitchButton)
+        layout.addWidget(self.yawButton)
         layout.addWidget(self.resetButton)
         self.setLayout(layout)
         self.show()
 
-    def reset_plot(self):
-        self.plot.reset_figure()
-        self.plot.update_plot([1, 2, 3, 4, 5])
-
 
 class PlotCanvas(FigureCanvas):
     def __init__(self):
+        # self.roll = 0
+        # self.pitch = 0
+        # self.yaw = 0
+        self.mid_point = numpy.array([17.5, 11, 8])
+        self.view_ang = 0
         figure = pyplot.figure()
-        axes = mplot3d.Axes3D(figure)
+        self.stlAxes = mplot3d.Axes3D(figure)
         FigureCanvas.__init__(self, figure)
-        # Load the STL files and add the vectors to the plot
-        your_mesh = mesh.Mesh.from_file('m113.STL')
-        collection = mplot3d.art3d.Poly3DCollection(your_mesh.vectors)
-        collection.set_facecolor([0.3] * 3)
-        collection.set_edgecolor([0.4] * 3)
-        axes.add_collection3d(collection)
+        FigureCanvas.setSizePolicy(self,
+                                   QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
 
-        # Auto scale to the mesh size
-        scale = your_mesh.points.flatten("C")
-        axes.auto_scale_xyz(scale, scale, scale)
+        self.reset_rotation()
 
-        # Show the plot to the screen
+    def rotate(self, roll=0, pitch=0, yaw=0):
+        t0 = time.time()
+        # self.roll += roll
+        # self.pitch += pitch
+        # self.yaw += yaw
+        #
+        # print(self.roll, self.pitch, self.yaw)
+
+        self.stlAxes.cla()
+        self.stlAxes.set_xlim(-25, 10)
+        self.stlAxes.set_ylim(35, 70)
+        self.stlAxes.set_zlim(-25, 0)
+
+        if not roll == 0:
+            self.your_mesh.rotate([1, 0, 0], math.radians(roll), self.mid_point)
+        if not pitch == 0:
+            self.your_mesh.rotate([0, 1, 0], math.radians(pitch), self.mid_point)
+        if not yaw == 0:
+            self.your_mesh.rotate([0, 0, 1], math.radians(yaw), self.mid_point)
+        self.collection = mplot3d.art3d.Poly3DCollection(self.your_mesh.vectors)
+        self.collection.set_facecolor([0.2] * 3)
+        self.collection.set_edgecolor([0.5] * 3)
+        self.stlAxes.add_collection3d(self.collection)
+        pyplot.axis("off")
         self.draw()
+        print(time.time() - t0)
 
-    # def __init__(self, parent=None, width=5, height=4, dpi=100):
-    #     self.fig = Figure(figsize=(width, height), dpi=dpi)
-    #     self.axes = self.fig.add_subplot(111)
-    #
-    #     FigureCanvas.__init__(self, self.fig)
-    #     self.setParent(parent)
-    #
-    #     FigureCanvas.setSizePolicy(self,
-    #             QtWidgets.QSizePolicy.Expanding,
-    #             QtWidgets.QSizePolicy.Expanding)
-    #     FigureCanvas.updateGeometry(self)
-    #     self.plot()
-    #
-    # def plot(self):
-    #     data = [random.random() for i in range(25)]
-    #     self.axes.plot(data, 'r-')
-    #     self.draw()
-    #
-    # def update_plot(self, data):
-    #     self.axes.plot(data, 'r-')
-    #     self.draw()
-    #
-    # def reset_figure(self):
-    #     self.axes.clear()
-
+    def reset_rotation(self):
+        self.your_mesh = mesh.Mesh.from_file('m113.STL')
+        self.your_mesh.rotate([-1, 0, 0], math.radians(90), numpy.array([17.5, 11, 8]))
+        self.rotate(0, 0, 0)
+        self.draw()
+        # self.rotate(roll=360 - (self.roll % 360),
+        #             pitch=360 - (self.pitch % 360),
+        #             yaw=-360 - (self.yaw % 360))
+        # self.roll = 0
+        # self.pitch = 0
+        # self.yaw = 0
 
 
 app = QtWidgets.QApplication(sys.argv)
 w = Window()
 app.exec_()
 sys.exit()
-
-#
-# # Create a new plot
-# figure = pyplot.figure()
-# axes = mplot3d.Axes3D(figure)
-#
-# # Load the STL files and add the vectors to the plot
-# your_mesh = mesh.Mesh.from_file('m113.STL')
-# print(dir(your_mesh))
-# print(your_mesh.vectors)
-# # print(your_mesh.v1)
-# # print(your_mesh.v2)
-# #axes.plot_trisurf(your_mesh.x, your_mesh.y, your_mesh.z, linewidth=0.2, antialiased=True)
-# collection = mplot3d.art3d.Poly3DCollection(your_mesh.vectors)
-# collection.set_facecolor([0.3]*3)
-# collection.set_edgecolor([0.4]*3)
-# axes.add_collection3d(collection)
-# print(dir(axes))
-#
-# # Auto scale to the mesh size
-# scale = your_mesh.points.flatten('C')
-# axes.auto_scale_xyz(scale, scale, scale)
-#
-# # Show the plot to the screen
-# pyplot.show()
