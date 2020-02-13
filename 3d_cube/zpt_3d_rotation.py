@@ -7,6 +7,7 @@ from matplotlib.figure import Figure
 from matplotlib import pyplot
 from stl import mesh
 from mpl_toolkits import mplot3d
+from matplotlib.colors import LightSource
 import math
 import time
 import numpy
@@ -79,8 +80,27 @@ class PlotCanvas(FigureCanvas):
         if not yaw == 0:
             self.your_mesh.rotate([0, 0, 1], math.radians(yaw), self.mid_point)
         self.collection = mplot3d.art3d.Poly3DCollection(self.your_mesh.vectors)
-        self.collection.set_facecolor([0.2] * 3)
-        self.collection.set_edgecolor([0.5] * 3)
+        ls = LightSource(azdeg=225.0, altdeg=45.0)
+
+        min = numpy.min(ls.shade_normals(self.your_mesh.normals, fraction=1.0))  # min shade value
+        max = numpy.max(ls.shade_normals(self.your_mesh.normals, fraction=1.0))  # max shade value
+        diff = max - min
+        newMin = 0.3
+        newMax = 0.95
+        newdiff = newMax - newMin
+        colourRGB = numpy.array((0.3,0.3,0.3, 1.0))
+        rgbNew = numpy.array([colourRGB * (newMin + newdiff * ((shade - min) / diff)) for shade in
+                           ls.shade_normals(self.your_mesh.normals, fraction=1.0)])
+
+        print(rgbNew)
+        # print(len(self.your_mesh.normals))
+        print(numpy.array([[x / 375] * 4 for x in range(0, 375)]))
+        self.collection.set_facecolors(numpy.array([[0.1, 0.1, 0.1, 0.1], [0.8, 0.8, 0.8, 0.8]]))
+        # self.collection.set_facecolors(numpy.array([[x/375]*3 +[0.62] for x in range(0, 375)]))
+        # self.collection.set_facecolor(rgbNew)
+        # self.collection.set_facecolor([0.2] * 3)
+        # self.collection.set_edgecolor([0.5] * 3)
+        # print(dir(self.collection))
         self.stlAxes.add_collection3d(self.collection)
         pyplot.axis("off")
         self.draw()
@@ -88,6 +108,11 @@ class PlotCanvas(FigureCanvas):
 
     def reset_rotation(self):
         self.your_mesh = mesh.Mesh.from_file('m113.STL')
+        # print(self.your_mesh.data)
+        # mesh.Mesh.remove_duplicate_polygons(self.your_mesh.data)
+        # mesh.Mesh.remove_empty_areas(self.your_mesh.data)
+        # print(dir(self.your_mesh))
+
         self.your_mesh.rotate([-1, 0, 0], math.radians(90), numpy.array([17.5, 11, 8]))
         self.rotate(0, 0, 0)
         self.draw()
