@@ -11,6 +11,7 @@ from matplotlib.colors import LightSource
 import math
 import time
 import numpy
+import vtkplotlib as vpl
 
 
 class Window(QtWidgets.QWidget):
@@ -20,7 +21,14 @@ class Window(QtWidgets.QWidget):
         self.setGeometry(0, 0, 500, 500)
 
         layout = QtWidgets.QVBoxLayout()
-        self.plot = PlotCanvas()
+        # self.plot = PlotCanvas()
+        self.your_mesh = mesh.Mesh.from_file('m113.STL')
+        self.your_mesh.rotate([-1, 0, 0], math.radians(90), numpy.array([17.5, 11, 8]))
+
+        self.plot = vpl.QtFigure()
+        vpl.mesh_plot(self.your_mesh)
+        vpl.reset_camera(self.plot)
+        self.plot.update()
 
         self.rollButton = QtWidgets.QPushButton("roll +10")
         self.rollButton.clicked.connect(lambda: self.plot.rotate(roll=10))
@@ -32,7 +40,7 @@ class Window(QtWidgets.QWidget):
         self.yawButton.clicked.connect(lambda: self.plot.rotate(yaw=10))
 
         self.resetButton = QtWidgets.QPushButton("reset")
-        self.resetButton.clicked.connect(self.plot.reset_rotation)
+        # self.resetButton.clicked.connect(self.plot.reset_rotation)
 
         layout.addWidget(self.plot)
         layout.addWidget(self.rollButton)
@@ -41,6 +49,7 @@ class Window(QtWidgets.QWidget):
         layout.addWidget(self.resetButton)
         self.setLayout(layout)
         self.show()
+        self.plot.show()
 
 
 class PlotCanvas(FigureCanvas):
@@ -88,16 +97,17 @@ class PlotCanvas(FigureCanvas):
         newMin = 0.3
         newMax = 0.95
         newdiff = newMax - newMin
-        colourRGB = numpy.array((0.3,0.3,0.3, 1.0))
+        colourRGB = numpy.array((0.3, 0.3, 0.3, 1.0))
         rgbNew = numpy.array([colourRGB * (newMin + newdiff * ((shade - min) / diff)) for shade in
                            ls.shade_normals(self.your_mesh.normals, fraction=1.0)])
 
         print(rgbNew)
         # print(len(self.your_mesh.normals))
         print(numpy.array([[x / 375] * 4 for x in range(0, 375)]))
-        self.collection.set_facecolors(numpy.array([[0.1, 0.1, 0.1, 0.1], [0.8, 0.8, 0.8, 0.8]]))
+        self.collection.set_facecolors([(0.1, 0.1, 0.1, 0.1),(0.8, 0.8, 0.8, 0.8)])
+        # self.collection.set_facecolors(numpy.array([[0.1, 0.1, 0.1, 0.1], [0.8, 0.8, 0.8, 0.8]]))
         # self.collection.set_facecolors(numpy.array([[x/375]*3 +[0.62] for x in range(0, 375)]))
-        # self.collection.set_facecolor(rgbNew)
+        self.collection.set_facecolor(rgbNew)
         # self.collection.set_facecolor([0.2] * 3)
         # self.collection.set_edgecolor([0.5] * 3)
         # print(dir(self.collection))
