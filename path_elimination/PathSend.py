@@ -1,10 +1,6 @@
 import socket
 import serial
 import math
-import matplotlib.pyplot as plt
-from matplotlib.path import Path
-import matplotlib.patches as patches
-import numpy
 
 class path_elimination:
     def __init__(self):
