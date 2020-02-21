@@ -1,0 +1,71 @@
+import socket
+import math
+
+localIP = "192.168.1.100"
+localPortRead = 6500
+localPortSend = 6600
+
+#converting str to 32bit
+def coordinate_str_convert_32(coordinate_str):
+    int_val = int(float(coordinate_str) * 1000000)
+    if int_val < 0:
+        int_val += 0xffffffff + 1
+
+    bytes_val = [x for x in int_val.to_bytes(4, byteorder="big")]
+
+    return bytes_val
+
+#converting 32bit to integer
+def coordinate_32_convert_to_int(bytes_val):
+    val = bytes_val[0] * 256 * 256 * 256 + bytes_val[1] * 256 * 256 + bytes_val[2] * 256 + bytes_val[3]
+    if val > 0x7fffffff:
+        int_val = (0xffffffff - val + 1) * (-1)
+
+    else:
+        int_val = val
+
+    return int_val / 1000000
+
+def cal_bearing(lat1,lat2,lon1,lon2):
+    dLon = lon2 - lon1;
+    y = math.sin(dLon) * math.cos(lat2);
+    x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
+    brng = math.atan2(y, x).toDeg();
+    if brng < 0: brng += 360
+    return brng
+
+# set up the socket using local address
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket.bind((localIP, localPortRead))
+# get the data sent to us
+data, ip = socket.recvfrom(9)
+data = [x for x in data]
+
+get_lat = data[0:4]
+get_lon = data[4:8]
+get_mod = data[8]
+
+lat = coordinate_str_convert_32(get_lat)
+lon = coordinate_str_convert_32(get_lon)
+mod = coordinate_str_convert_32(get_mod)
+
+lat = coordinate_32_convert_to_int(lat)
+lon = coordinate_32_convert_to_int(lon)
+mod = coordinate_32_convert_to_int(mod)
+
+last_lat = 45
+last_lon = 45
+
+if mod == 0:
+    #add_point
+    pass
+elif mod == 1:
+    bear = cal_bearing(lat, last_lat, lon, last_lon)
+else:
+    pass
+msg_bytes = []
+msg_bytes.append(lat)
+msg_bytes.append(lon)
+msg_bytes.append(bear)
+sock.sendto(msg_bytes, ("192.168.1.100", 6600))
