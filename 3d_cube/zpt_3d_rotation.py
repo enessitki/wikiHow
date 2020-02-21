@@ -51,7 +51,7 @@ class ZptFigure(vpl.QtFigure):
         super().__init__()
         self.mid_point = numpy.array([17.5, 11, 8])
         self.zptMesh = mesh.Mesh.from_file('m113.STL')
-        vpl.mesh_plot(self.zptMesh, color="green")
+        vpl.mesh_plot(self.zptMesh, color="green", opacity=1)
         vpl.reset_camera(self)
         self.cameraPosition = numpy.array([0, 0, 1])
         self.upView = [0, 1, 0]
