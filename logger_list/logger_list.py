@@ -90,7 +90,6 @@ class LoggerList:
             self.load_file(file_id)
             self.currentFileCache[loc_idx]
 
-
     def clean_temp(self):
         subprocess.call("rm -r " + self.tempDir + "/*", shell=True)
 

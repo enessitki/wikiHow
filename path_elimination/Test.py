@@ -1,3 +1,4 @@
+from geopy import distance
 import math
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
@@ -5,190 +6,131 @@ import matplotlib.patches as patches
 import numpy
 
 
-class MyClass:
-    def __init__(self):
-        self.myVariable = 0
+class PathTracker:
+    def __init__(self, min_distance=1, max_distance=10, target_distance=5, tolerance_angle=None):
+        self.minDistance = min_distance  # meter
+        self.maxDistance = max_distance  # meter
+        self.targetDistance = target_distance  # meter
 
-    def to_do(self, my_input):
-        pass
+        if tolerance_angle is None:
+            self.sloopTolerance = min_distance / max_distance  # slope
+        else:
+            self.sloopTolerance = math.atan(tolerance_angle) * 180 / math.pi
 
+        self.path = []
+        self.isPathEmpty = True
+        self.isPathHasNoLine = True
 
-def calDist(point1,point2):
-    x1, y1 = point1
-    x2, y2 = point2
-    dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
-    return dist
+    def get_target_coordinate(self, lat, lon):
+        self.add_new_coordinate(lat, lon)
 
+        N = len(self.path)
 
-def calAngle(point1, point2, point3):
-    x1, y1 = point1
-    x2, y2 = point2
-    x3, y3 = point3
-    ang = math.degrees(math.atan2(y3 - y2, x3 - x2) - math.atan2(y1 - y2, x1 - x2))
-    if ang <0:
-        ang =ang + 360
-        if ang > 180:
-            ang = 360-ang
-        return ang
-    else:
-        if ang > 180:
-            ang = 360 - ang
-        return ang
+        if N >= 1:
+            return 0, 0
+        else:
+            self.path.pop(-1)
+            return self.path[-1]
 
+        # p2 = (lat, lon)
+        #
+        # N = len(self.path)
+        # if N > 1:
+        #     for idx in range(N):
+        #         d = distance.distance(self.path[-1], p2).meters
+        #         if d < self.minDistance:
+        #             self.path.pop(-1)
+        #         else:
+        #             break
+        # else:
+        #     return 0, 0
+        #
+        # if len(self.path) > 0:
+        #     return self.path[-1]
+        # else:
+        #     return 0, 0
 
-def maxDist(point1, point2):
-    dist = calDist(point1,point2)
-    if dist > 20:
-        return False
-    else:
-        return True
+    def add_new_coordinate(self, lat, lon):
+        if self.isPathEmpty:
+            self.path.append((lat, lon))
+            self.isPathEmpty = False
 
+        else:
+            p2 = (lat, lon)
+            d = distance.distance(self.path[-1], p2).meters
 
-def minDist(point1, point2):
-    dist = calDist(point1, point2)
-    if dist < 2.5:
-        return False
-    else:
-        return True
+            if d < self.minDistance:
+                pass
+            elif d > self.maxDistance:
+                self.path.append(p2)
 
+            else:
+                if self.isPathHasNoLine:
+                    if len(self.path) >= 2:
+                        self.isPathHasNoLine = False
+                else:
+                    p0 = self.path[-2]
+                    p1 = self.path[-1]
 
-def maxAngle(point1, point2, point3):
-    angle = calAngle(point1, point2, point3)
-    if angle < 30:          #ignore angle
-        return True
-    else:
-        return False
+                    dx0 = p0[0] - p1[0]
+                    dx1 = p1[0] - p2[0]
+                    dy0 = p0[1] - p1[1]
+                    dy1 = p1[1] - p2[1]
+                    if dx0 == 0 or dx1 == 0:
+                        self.path.append(p2)
 
+                    else:
+                        if abs(dy0/dx0 - dy1/dx1) > self.sloopTolerance:
+                            self.path.append(p2)
+                        else:
+                            self.path[-1] = p2
 
-def minAngle(point1, point2, point3):
-    angle = calAngle(point1, point2, point3)
-    if angle < 10:          #little sharp angle
-        return True
-    else:
-        return False
+p1 = PathTracker()
+coorX = []
+coorY = []
+file1 = open("MT.txt", "r")
+while True:
+    line = file1.readline()
+    if len(line) < 1:
+        break
+    line = line.split(",")
+    lat1 = float(line[1])
+    coorX.append(lat1)
+    lon1 = float(line[2])
+    coorY.append(lon1)
+    data = (lat1, lon1)
+    #coordinates.append(data)
+    p1.add_new_coordinate(lat1, lon1)
+i=0
+px = []
+py = []
+while True:
+    if i == len(p1.path):
+        break
+    x, y = p1.path[i]
+    px.append(x)
+    py.append(y)
+    i= i+1
+#codes = [Path.MOVETO] + [Path.LINETO] * (len(coordinates) - 1 )
+#codes2 = [Path.MOVETO] + [Path.LINETO] * (len(p1.path) - 1 )
 
+#path = Path(coordinates, codes)
+#patch = patches.PathPatch(path, facecolor='none', lw=2)
 
-def cumulAngle(point1, point2, point3, lastAngle, cuAngle):
-    cuAngle=cuAngle+lastAngle
-    if cuAngle > 30:         #cumulative angle
-        return False
-    else:
-        return True
+#path2 = Path(p1.path, codes2)
+#patch2 = patches.PathPatch(path2,linestyle=':',edgecolor="red", facecolor='none', lw=2)
 
-def slope(point1, point2):
-    xs1, ys1 = point1
-    xs2, ys2 = point2
-    m = (ys1-ys2) / (xs1-xs2)
-    z = (ys2-ys1) / (xs2-xs1)
-    zed=math.atan(z)
-    zedx=math.degrees(zed)
-    print("angle", zedx)
-    print(z)
-    print(m)
-    return m
-
-coordinates = [(x[0]*100, x[1]*100) for x in numpy.random.rand(45, 2)]
-print(coordinates)
-codes= [
-    Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,
-    Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,
-    Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,
-    Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,
-    Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,
-    Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,
-    Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,
-    Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,
-    Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO
-]
-
-k = 0
-test=[]
-test.append(coordinates[0])
-testCode=[]
-testCode.append(Path.MOVETO)
-l1 = len(coordinates)
-
-for i in range(2,l1-1):
-    tfmin=minDist(coordinates[i-1],coordinates[i])
-    tfmax=maxDist(coordinates[i-1], coordinates[i])
-    if tfmax == True:
-        if tfmin== True:
-            tfMinAngle = minAngle(coordinates[i-2], coordinates[i-1], coordinates[i])
-            tfMaxAngle = maxAngle(coordinates[i-2], coordinates[i-1], coordinates[i])
-            if tfMinAngle < True and tfMaxAngle > True:
-                test.appent(coordinates[i])
-    else:
-        test.append(coordinates[i])
-ltest=len(test)
-for i in range(1,ltest):
-    testCode.append(Path.LINETO)
-
-for i in range(1, l1):
-    dist = calDist(coordinates[i], coordinates[k])
-    if dist > 2.5:
-        test.append(coordinates[i])
-        testCode.append(Path.LINETO)
-        k = i
-#print(test)
-path3 = Path(test, testCode)
-fig3, ax3 = plt.subplots()
-patch3 = patches.PathPatch(path3, facecolor='none', lw=2)
-ax3.add_patch(patch3)
-ax3.set_xlim(0, 100)
-ax3.set_ylim(0, 100)
-
-
-angThree = calAngle(coordinates[3],coordinates[0],coordinates[1])
-#print(angThree)
-testAng=[]
-testAng.append(coordinates[0])
-testAng.append(coordinates[1])
-testCodeAng=[]
-testCodeAng.append(Path.MOVETO)
-testCodeAng.append(Path.LINETO)
-
-
-for i in range(1, l1):
-    if i+2 < l1:
-        if minDist(coordinates[i-1], coordinates[i]) == True:
-            angThree = calAngle(coordinates[i-1], coordinates[i], coordinates[i+1])
-            if angThree > 10:
-                if maxDist(coordinates[i-1], coordinates[i]) == True:
-                    testAng.append(coordinates[i+2])
-                    testCodeAng.append(Path.LINETO)
-path4=Path(testAng, testCodeAng)
-fig4, ax4 = plt.subplots()
-patch4 = patches.PathPatch(path4, facecolor='none', lw=2)
-ax4.add_patch(patch4)
-ax4.set_xlim(0, 100)
-ax4.set_ylim(0, 100)
-
-
-
-x1=int((l1)/2)-1
-coor2=[]
-coor2.append(coordinates[0])
-codes2=[]
-codes2.append((codes[0]))
-for i in range(0, x1):
-    coor2.append(coordinates[2*i+1])
-    codes2.append(codes[2*i+1])
-coor2.append(coordinates[l1-1])
-codes2.append((codes[l1-1]))
-path = Path(coor2, codes2)
-
-fig, ax = plt.subplots()
-patch= patches.PathPatch(path, facecolor='none', lw=2)
-ax.add_patch(patch)
-ax.set_xlim(0, 100)
-ax.set_ylim(0, 100)
-
-path2=Path(coordinates, codes)
-
-fig2, ax2=plt.subplots()
-patch2= patches.PathPatch(path2, facecolor='none', lw=2)
-ax2.add_patch(patch2)
-ax2.set_xlim(0, 100)
-ax2.set_ylim(0, 100)
-
+#fig, ax = plt.subplots()
+#ax.add_patch(patch)
+#ax.add_patch(patch2)
+#ax.set_xlim(39.97, 39.98)
+#ax.set_ylim(32.5, 33)
+plt.plot(coorX, coorY, 'o-')
+plt.plot(px, py, 'o-')
 plt.show()
+
+
+
+
+
+
