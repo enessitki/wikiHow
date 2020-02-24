@@ -74,6 +74,23 @@ class LoggerList:
             self.load_file(file_id)
             raise Exception("Operation not supported.")
 
+    def __delete__(self, instance):
+        if self.globalMaxIndex < instance:
+            raise Exception("Index out of range.")
+
+        file_id = int(instance / self.maxCacheSize)
+        loc_idx = instance % self.maxCacheSize
+        if file_id == self.maxFileIndex:
+            self.cache[loc_idx] = self.__getitem__(instance-1)
+
+        elif file_id == self.currentFileIndex:
+            self.__setitem__(instance, self.__getitem__(instance-1))
+
+        else:
+            self.load_file(file_id)
+            self.currentFileCache[loc_idx]
+
+
     def clean_temp(self):
         subprocess.call("rm -r " + self.tempDir + "/*", shell=True)
 
@@ -89,4 +106,3 @@ print(my_list[10])
 print(my_list[7])
 print(my_list[2])
 print(my_list[0])
-
