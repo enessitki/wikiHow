@@ -52,29 +52,36 @@ class ImuView2D(QtWidgets.QWidget):
     def draw_roll_pitch_yaw(self, event, qp):
         qp.drawRect(0, 0, self.max_width, self.max_height)
 
+        # todo add static pointer
+
         # roll & pitch drawing
         qp.translate(self.max_width / 2, self.max_height / 2)
         qp.rotate(self.roll)
 
         qp.setBrush(QBrush(QColor(84, 38, 27, 255), Qt.SolidPattern))
-        qp.drawRect(-self.max_width, self.pitch / 180 * self.max_width / 2, 2 * self.max_width, 2 * self.max_height)
+        qp.drawRect(-self.max_width, self.pitch / 180 * self.max_width, 2 * self.max_width, 2 * self.max_height)
 
         qp.setBrush(QBrush(QColor(0, 95, 123, 255), Qt.SolidPattern))
-        qp.drawRect(-self.max_width, self.pitch / 180 * self.max_width / 2, 2 * self.max_width, -2 * self.max_height)
+        qp.drawRect(-self.max_width, self.pitch / 180 * self.max_width, 2 * self.max_width, -2 * self.max_height)
 
-        qp.drawText(-12, self.pitch / 180 * self.max_width / 2 - 2, str(self.roll))
+        qp.drawText(-12, self.pitch / 180 * self.max_width - 2, str(self.pitch))
 
-        qp.drawLine(-self.max_width, self.pitch / 180 * self.max_width / 2,
-                    +self.max_width, self.pitch / 180 * self.max_width / 2)
+        qp.drawLine(-self.max_width, self.pitch / 180 * self.max_width,
+                    +self.max_width, self.pitch / 180 * self.max_width)
 
         pen = QPen(Qt.red, 3, Qt.SolidLine)
         qp.setPen(pen)
 
-        qp.drawLine(-self.min_size, -32 / 180 * self.max_width / 2,
-                    +self.min_size, -32 / 180 * self.max_width / 2)
+        qp.drawLine(-self.min_size, -31 / 180 * self.max_width,
+                    +self.min_size, -31 / 180 * self.max_width)
 
-        qp.drawLine(-self.min_size, 32 / 180 * self.max_width / 2,
-                    +self.min_size, 32 / 180 * self.max_width / 2)
+        qp.drawText(+self.min_size, -31 / 180 * self.max_width + 6, " +31")
+
+        qp.drawLine(-self.min_size, 31 / 180 * self.max_width,
+                    +self.min_size, 31 / 180 * self.max_width)
+
+        qp.drawText(+self.min_size + 10, 31 / 180 * self.max_width + 6, " -31")
+
 
         pen = QPen(Qt.blue, 3, Qt.SolidLine)
         qp.setPen(pen)
@@ -83,28 +90,31 @@ class ImuView2D(QtWidgets.QWidget):
 
         pen = QPen(QColor(190, 190, 190), 3, Qt.SolidLine)
         qp.setPen(pen)
-        # qp.drawLine(-self.min_size, self.pitch / 180 * self.max_width / 2 + self.min_size,
-        #             +self.min_size, self.pitch / 180 * self.max_width / 2 + self.min_size)
 
         qp.rotate(-self.roll)
-        # qp.translate(-self.max_width / 2, -self.max_height / 2)
 
         # yaw drawing
-        # qp.drawLine(self.margin, self.margin, self.max_width - self.margin, self.margin)
-        # qp.drawLine(self.margin, self.margin + self.mid_size, self.max_width - self.margin, self.margin + self.mid_size)
         qp.drawText(-12, self.font_size + self.margin / 2 - self.max_height/2, str(self.yaw))
 
-        limiter = (self.yaw % 10) * self.min_size / 10
+        limiter = ((self.yaw ) % 10) * self.min_size / 10 + self.min_size/2
+        yaw = math.floor(self.yaw/10)*10 + 40
 
+        qp.setFont(QFont('Decorative', 8))
         while limiter <= self.max_width - 2 * self.margin:
+            qp.drawText(-self.max_width / 2 + self.margin + limiter - 5,
+                        2 * self.margin + self.min_size - self.max_height / 2 - 5,
+                        str(yaw))
+
             qp.drawLine(-self.max_width / 2 + self.margin + limiter, 2 * self.margin - self.max_height/2,
-                        -self.max_width / 2 + self.margin + limiter, 2 * self.margin + self.mid_size - self.max_height/2)
+                        -self.max_width / 2 + self.margin + limiter, 2 * self.margin + self.margin/2 - self.max_height/2)
+
+            yaw -= 10
             limiter += self.min_size
 
         pen = QPen(Qt.red, 3, Qt.SolidLine)
         qp.setPen(pen)
         qp.drawLine(0, 2 * self.margin - self.max_height / 2,
-                    0, 2 * self.margin + self.mid_size - self.max_height / 2)
+                    0, 2 * self.margin + self.min_size - self.max_height / 2)
 
 
 class Window(QtWidgets.QWidget):
@@ -120,7 +130,7 @@ class Window(QtWidgets.QWidget):
         self.angle = 0
         self.increment = 1
         timer = QTimer(self)
-        timer.setInterval(100)  # period, in milliseconds
+        timer.setInterval(50)  # period, in milliseconds
         timer.timeout.connect(self.test_fn)
         timer.start()
 
