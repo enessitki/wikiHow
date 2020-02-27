@@ -52,8 +52,6 @@ class ImuView2D(QtWidgets.QWidget):
     def draw_roll_pitch_yaw(self, event, qp):
         qp.drawRect(0, 0, self.max_width, self.max_height)
 
-        # todo add static pointer
-
         # roll & pitch drawing
         qp.translate(self.max_width / 2, self.max_height / 2)
         qp.rotate(self.roll)
@@ -96,7 +94,7 @@ class ImuView2D(QtWidgets.QWidget):
         # yaw drawing
         qp.drawText(-12, self.font_size + self.margin / 2 - self.max_height/2, str(self.yaw))
 
-        limiter = ((self.yaw ) % 10) * self.min_size / 10 + self.min_size/2
+        limiter = (self.yaw % 10) * self.min_size / 10 + self.min_size/2
         yaw = math.floor(self.yaw/10)*10 + 40
 
         qp.setFont(QFont('Decorative', 8))
@@ -115,6 +113,16 @@ class ImuView2D(QtWidgets.QWidget):
         qp.setPen(pen)
         qp.drawLine(0, 2 * self.margin - self.max_height / 2,
                     0, 2 * self.margin + self.min_size - self.max_height / 2)
+
+        # static pointer
+        pen = QPen(QColor(0, 0, 0, 255), 3, Qt.SolidLine)
+        qp.setPen(pen)
+        qp.setBrush(QBrush(QColor(0, 0, 0, 255), Qt.SolidPattern))
+        qp.drawPolygon(QPolygon([QPoint(0, 0), QPoint(10, 10), QPoint(-10, 10)]))
+        qp.drawLine(-10, 0, 10, 0)
+        qp.drawLine(-self.mid_size - self.min_size, 0, -self.mid_size, 0)
+        qp.drawLine(self.mid_size + self.min_size, 0, self.mid_size, 0)
+
 
 
 class Window(QtWidgets.QWidget):
