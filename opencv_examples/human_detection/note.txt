@@ -1,0 +1,5 @@
+https://github.com/opencv/opencv/tree/master/data/haarcascades
+
+https://medium.com/@madhawavidanapathirana/https-medium-com-madhawavidanapathirana-real-time-human-detection-in-computer-vision-part-1-2acb851f4e55
+
+https://gist.github.com/madhawav/cd913f68b9405b438833b614ccb49b57
