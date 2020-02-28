@@ -1,0 +1,7 @@
+make clean && make && sudo make install && sudo rm -r /usr/lib/x86_64-linux-gnu/gstreamer-1.0/gstreamer-1.0 && sudo mv /usr/local/lib/gstreamer-1.0/ /usr/lib/x86_64-linux-gnu/gstreamer-1.0/
+
+gst-launch-1.0 -v videotestsrc ! video/x-raw, format=RGBA, width=100, height=100, framerate=10/1 ! videoconvert ! xvimagesink
+
+https://convertio.co/tr/png-rgba/
+
+http://www.codebind.com/linux-tutorials/install-opencv-ubuntu-18-04-lts-c-cpp-linux/
