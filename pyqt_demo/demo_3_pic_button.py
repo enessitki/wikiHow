@@ -5,10 +5,6 @@ import sys
 import time
 
 
-class MyClass(object):
-    pass
-
-
 class PicButton(QtWidgets.QLabel):
     def __init__(self, pixmaps, state, parent=None):
         super().__init__(parent=parent)
