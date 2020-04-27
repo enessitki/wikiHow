@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/UKB/UKB.iml" filepath="$PROJECT_DIR$/UKB/UKB.iml" />
+      <module fileurl="file://$PROJECT_DIR$/UKB-android.iml" filepath="$PROJECT_DIR$/UKB-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android-tutorial-5/android-tutorial-5.iml" filepath="$PROJECT_DIR$/android-tutorial-5/android-tutorial-5.iml" group="UKB-android/android-tutorial-5" />
+      <module fileurl="file://$PROJECT_DIR$/ika-local-repo-UKB-android.iml" filepath="$PROJECT_DIR$/ika-local-repo-UKB-android.iml" group="UKB-android" />
+    </modules>
+  </component>
+</project>

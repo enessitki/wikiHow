@@ -1,0 +1,19 @@
+
+
+"udpsrc name=videosrc port=5800 ! video/mpeg, width=640, height=480, framerate=25/1, mpegversion=2 ! avdec_mpeg2video ! videoconvert ! autovideosink"
+
+"udpsrc port=5800 ! application/x-rtp, media=video, clock-rate=90000, encoding-name=JPEG, framerate=25/1, payload=26 ! rtpjpegdepay ! jpegdec ! videoconvert ! autovideosink"
+
+"udpsrc port=5800 ! application/x-rtp, media=video, clock-rate=90000, encoding-name=VP8, payload=96, framerate=25/1 ! rtpvp8depay ! vp8dec ! videoconvert ! autovideosink"
+
+
+
+
+
+
+
+gst-launch-1.0 -v v4l2src device=/dev/video0 ! image/jpeg, width=640, height=480, framerate=25/1 ! jpegdec ! jpegenc quality=25 ! rtpjpegpay ! udpsink host=192.168.2.241 port=5800 async=false
+
+gst-launch-1.0 -v v4l2src device=/dev/video0 ! image/jpeg, width=640, height=480, framerate=25/1 ! jpegdec ! avenc_mpeg2video idct-algo=7 dct-algo=0 bitrate=400000 bitrate-tolerance=8000000 ! udpsink host=192.168.2.146 port=5800 async=false
+
+gst-launch-1.0 -v v4l2src device=/dev/video0 ! image/jpeg, width=640, height=480, framerate=25/1 ! jpegdec ! vp8enc target-bitrate=512000 ! rtpvp8pay ! udpsink host=192.168.2.146 port=5800 async=false

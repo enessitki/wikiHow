@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <GridLayout
+        android:id="@+id/GridLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="3"
+        android:rowCount="2"
+        android:orientation="horizontal"
+        android:background="@color/primary_color">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/if_disconnected"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/light_text"
+            android:padding="@dimen/spacer"/>
+
+        <Spinner
+            android:id="@+id/spinner_disconnection_policy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contextClickable="true"
+            android:entries="@array/disconnection_policy"
+            android:padding="@dimen/spacer"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/secondary_color"
+            android:text="@string/apply"
+            android:textColor="@color/light_text"
+            android:textSize="@dimen/text_size"
+            android:padding="@dimen/spacer"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/switch_payload"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/light_text"
+            android:padding="@dimen/spacer"/>
+
+
+        <ToggleButton
+            android:id="@+id/toggle_payload"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:background="@drawable/toggle_selector"
+            android:textOff=""
+            android:textOn=""
+            android:textColor="@color/light_text"
+            android:text="@string/off"
+            android:padding="@dimen/spacer"/>
+
+
+        <Button
+            android:id="@+id/button_payload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/secondary_color"
+            android:text="@string/apply"
+            android:textColor="@color/light_text"
+            android:textSize="@dimen/text_size"
+            android:padding="@dimen/spacer"
+            android:layout_marginTop="@dimen/spacer"
+            android:onClick="setPayloadActive"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/return_home"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/light_text"
+            android:padding="@dimen/spacer"/>
+
+
+        <ToggleButton
+            android:id="@+id/toggle_return_home"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:background="@drawable/toggle_selector"
+            android:textOff=""
+            android:textOn=""
+            android:textColor="@color/light_text"
+            android:text="@string/off"
+            android:padding="@dimen/spacer"/>
+
+
+        <Button
+            android:id="@+id/button_return_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/secondary_color"
+            android:text="@string/apply"
+            android:textColor="@color/light_text"
+            android:textSize="@dimen/text_size"
+            android:padding="@dimen/spacer"
+            android:layout_marginTop="@dimen/spacer"
+            android:onClick="setReturnHome"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/destruct_the_vehicle"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/light_text"
+            android:padding="@dimen/spacer"/>
+
+
+        <ToggleButton
+            android:id="@+id/toggle_destruct_on"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:background="@drawable/toggle_selector"
+            android:textOff=""
+            android:textOn=""
+            android:textColor="@color/light_text"
+            android:text="@string/off"
+            android:padding="@dimen/spacer"/>
+
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/secondary_color"
+            android:text="@string/apply"
+            android:textColor="@color/light_text"
+            android:textSize="@dimen/text_size"
+            android:padding="@dimen/spacer"
+            android:layout_marginTop="@dimen/spacer"
+            android:onClick="setDestructOn"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/refresh_stream"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/light_text"
+            android:padding="@dimen/spacer"/>
+
+        <Spinner
+            android:id="@+id/spinner_wifi_channel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contextClickable="true"
+            android:entries="@array/wifi_channels"
+            android:padding="@dimen/spacer"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/secondary_color"
+            android:text="@string/apply"
+            android:textColor="@color/light_text"
+            android:textSize="@dimen/text_size"
+            android:padding="@dimen/spacer"
+            android:layout_marginTop="@dimen/spacer"
+            android:onClick="setRefreshWifi"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/auto_fix_title"
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/light_text"
+            android:padding="@dimen/spacer"/>
+
+        <Spinner
+            android:id="@+id/spinner_auto_fix"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contextClickable="true"
+            android:entries="@array/auto_fix"/>
+
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/secondary_color"
+            android:text="@string/apply"
+            android:textColor="@color/light_text"
+            android:textSize="@dimen/text_size"
+            android:padding="@dimen/spacer"
+            android:layout_marginTop="@dimen/spacer"/>
+
+    </GridLayout>
+</ScrollView>
