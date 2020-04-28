@@ -1,0 +1,57 @@
+{
+  "buildFiles": [
+    "/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Android.mk",
+    "/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Application.mk"
+  ],
+  "cleanCommands": [
+    "/home/esetron/Android/Sdk/ndk/20.1.5948944/ndk-build NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Android.mk NDK_APPLICATION_MK\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Application.mk APP_ABI\u003darm64-v8a NDK_ALL_ABIS\u003darm64-v8a NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-23 NDK_OUT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/lib NDK_APPLICATION_MK\u003djni/Application.mk GSTREAMER_JAVA_SRC_DIR\u003dsrc GSTREAMER_ROOT_ANDROID\u003d/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1 GSTREAMER_ASSETS_DIR\u003dsrc/assets clean"
+  ],
+  "buildTargetsCommand": "/home/esetron/Android/Sdk/ndk/20.1.5948944/ndk-build NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Android.mk NDK_APPLICATION_MK\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Application.mk APP_ABI\u003darm64-v8a NDK_ALL_ABIS\u003darm64-v8a NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-23 NDK_OUT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/lib NDK_APPLICATION_MK\u003djni/Application.mk GSTREAMER_JAVA_SRC_DIR\u003dsrc GSTREAMER_ROOT_ANDROID\u003d/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1 GSTREAMER_ASSETS_DIR\u003dsrc/assets {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "gstreamer_android-debug-gst-build-arm64-v8a": {
+      "buildCommand": "/home/esetron/Android/Sdk/ndk/20.1.5948944/ndk-build NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Android.mk NDK_APPLICATION_MK\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Application.mk APP_ABI\u003darm64-v8a NDK_ALL_ABIS\u003darm64-v8a NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-23 NDK_OUT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/lib NDK_APPLICATION_MK\u003djni/Application.mk GSTREAMER_JAVA_SRC_DIR\u003dsrc GSTREAMER_ROOT_ANDROID\u003d/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1 GSTREAMER_ASSETS_DIR\u003dsrc/assets gst-build-arm64-v8a/libgstreamer_android.so",
+      "toolchain": "toolchain-gst-build-arm64-v8a",
+      "abi": "gst-build-arm64-v8a",
+      "artifactName": "gstreamer_android",
+      "files": [
+        {
+          "src": "/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/gst-build-arm64-v8a/gstreamer_android.c",
+          "flags": "--sysroot\u003d/home/esetron/Android/Sdk/ndk/20.1.5948944/toolchains/llvm/prebuilt/linux-x86_64/sysroot -isystem /home/esetron/Android/Sdk/ndk/20.1.5948944/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android -target aarch64-none-linux-android23 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /home/esetron/Android/Sdk/ndk/20.1.5948944/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -fno-addrsig -fpic -Wall -Werror -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/gstreamer-1.0 -I/home/nirbheek/projects/repos/cerbero.git/1.16/build/dist/android_universal/arm64/include/orc-0.4 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/gstreamer-1.0 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/glib-2.0 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/lib/glib-2.0/include -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include"
+        }
+      ],
+      "output": "gst-build-arm64-v8a/libgstreamer_android.so"
+    },
+    "tutorial-5-debug-arm64-v8a": {
+      "buildCommand": "/home/esetron/Android/Sdk/ndk/20.1.5948944/ndk-build NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Android.mk NDK_APPLICATION_MK\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/Application.mk APP_ABI\u003darm64-v8a NDK_ALL_ABIS\u003darm64-v8a NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-23 NDK_OUT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003d/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/lib NDK_APPLICATION_MK\u003djni/Application.mk GSTREAMER_JAVA_SRC_DIR\u003dsrc GSTREAMER_ROOT_ANDROID\u003d/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1 GSTREAMER_ASSETS_DIR\u003dsrc/assets /home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/obj/local/arm64-v8a/libtutorial-5.so",
+      "toolchain": "toolchain-arm64-v8a",
+      "abi": "arm64-v8a",
+      "artifactName": "tutorial-5",
+      "files": [
+        {
+          "src": "/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/dummy.cpp",
+          "flags": "-target aarch64-none-linux-android23 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /home/esetron/Android/Sdk/ndk/20.1.5948944/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -fno-addrsig -fno-exceptions -fno-rtti -fpic -O0 -UNDEBUG -fno-limit-debug-info -fno-experimental-isel -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/gstreamer-1.0 -I/home/nirbheek/projects/repos/cerbero.git/1.16/build/dist/android_universal/arm64/include/orc-0.4 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/gstreamer-1.0 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/glib-2.0 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/lib/glib-2.0/include -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include -I/home/esetron/Android/Sdk/ndk/20.1.5948944/sources/cxx-stl/llvm-libc++/include -I/home/esetron/Android/Sdk/ndk/20.1.5948944/sources/cxx-stl/llvm-libc++/../llvm-libc++abi/include -I/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni -std\u003dc++11 -DANDROID -nostdinc++ -Wa,--noexecstack -Wformat -Werror\u003dformat-security"
+        },
+        {
+          "src": "/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni/tutorial-5.c",
+          "flags": "-target aarch64-none-linux-android23 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /home/esetron/Android/Sdk/ndk/20.1.5948944/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -fno-addrsig -fpic -O0 -UNDEBUG -fno-limit-debug-info -fno-experimental-isel -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/gstreamer-1.0 -I/home/nirbheek/projects/repos/cerbero.git/1.16/build/dist/android_universal/arm64/include/orc-0.4 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/gstreamer-1.0 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include/glib-2.0 -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/lib/glib-2.0/include -I/home/esetron/Documents/gstreamer-1.0-android-universal-1.16.1/arm64/include -I/home/esetron/Android/Sdk/ndk/20.1.5948944/sources/cxx-stl/llvm-libc++/include -I/home/esetron/Android/Sdk/ndk/20.1.5948944/sources/cxx-stl/llvm-libc++/../llvm-libc++abi/include -I/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/jni -DANDROID -nostdinc++ -Wa,--noexecstack -Wformat -Werror\u003dformat-security"
+        }
+      ],
+      "output": "/home/esetron/GitHub/wikiHow/uv-robot-ukb-android/android-tutorial-5/build/intermediates/ndkBuild/debug/obj/local/arm64-v8a/libtutorial-5.so"
+    }
+  },
+  "toolchains": {
+    "toolchain-arm64-v8a": {
+      "cCompilerExecutable": "/home/esetron/Android/Sdk/ndk/20.1.5948944/toolchains/llvm/prebuilt/linux-x86_64/bin/clang",
+      "cppCompilerExecutable": "/home/esetron/Android/Sdk/ndk/20.1.5948944/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+    },
+    "toolchain-gst-build-arm64-v8a": {
+      "cCompilerExecutable": "/home/esetron/Android/Sdk/ndk/20.1.5948944/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
+    }
+  },
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}
