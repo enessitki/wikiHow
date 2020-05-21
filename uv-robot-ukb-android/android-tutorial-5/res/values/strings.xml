@@ -1,91 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">UKB</string>
+    <string name="app_name">UV-C_Robot</string>
     <string name="button_connect">Bağlan</string>
     <string name="button_play">Oynat</string>
     <string name="button_stop">Durdur</string>
-    <string name="button_record">Kayıt</string>
-    <string name="button_video_flip">Döndür</string>
-    <string name="button_screen_shot">Ekran Görüntüsü</string>
-    <string name="button_motion_detect">Hareket Algıla</string>
+    <string name="button_light_control">Işıklar</string>
     <string name="button_config">Ayarlar</string>
 
     <string name="image_ika_battery">Araç Batarya</string>
     <string name="text_ika_battery_info">Araç Batarya Bilgisi</string>
-    <string name="image_direction">Araç Yönü</string>
-    <string name="image_arm_position">Kol Pozisyonu</string>
-    <string name="image_led_front">Ön Işık</string>
-    <string name="image_led_back">Arka Işık</string>
 
     <string name="close">Kapat</string>
     <string name="on">Aç</string>
     <string name="off">Kapat</string>
     <string name="apply">Uygula</string>
 
-
-
     <string name="motion_detected">Hareket Algılandı</string>
-    <string name="screen_shot_taken">Fotoğraf çekildi.</string>
-
-    <string name="switch_payload">Faydalı Yükü Etkinleştir</string>
-    <string name="return_home">Eve Dön</string>
-    <string name="destruct_the_vehicle">Aracı İmha Et</string>
 
     <string name="if_disconnected">Bağlantı Kesilirse</string>
     <string-array name="disconnection_policy">
-        <item>Dur    </item>
-        <item>Eve Dön</item>
-        <item>İmha Et</item>
+        <item>seç 1    </item>
+        <item>seç 2    </item>
+        <item>seç 3    </item>
     </string-array>
 
-    <string name="refresh_stream">Yayını Yenile</string>
-    <string-array name="wifi_channels">
-        <item>Kanal - *</item>
-        <item>Kanal - 1</item>
-        <item>Kanal - 2</item>
-        <item>Kanal - 3</item>
-        <item>Kanal - 4</item>
-        <item>Kanal - 5</item>
-        <item>Kanal - 6</item>
-        <item>Kanal - 7</item>
-        <item>Kanal - 8</item>
-        <item>Kanal - 9</item>
-        <item>Kanal - 10</item>
-        <item>Kanal - 11</item>
-        <item>Kanal - 12</item>
-        <item>Kanal - 13</item>
-    </string-array>
-
-    <string-array name="imu_commands">
-        <item>*Pozisyonlama*</item>
-        <item>Reset</item>
-        <item>Pozisyonu Kaydet</item>
-        <item>Kayıtlı Pozisyonu Sil</item>
-        <item>Kayıtlı Pozisyona Dön</item>
-    </string-array>
-
-    <string name="auto_fix_title">Otomatik Düzeltme</string>
-    <string-array name="auto_fix">
-        <item>Oto. Düzeltmeyi Kapat</item>
-        <item>Aracı Otomatik Düzelt</item>
-    </string-array>
-
+    <string name="drive_mode">Sürüş Modu</string>
     <string-array name="drive_mode">
         <item>Sürüş Modu Manuel</item>
         <item>Sürüş Modu Otomatik</item>
     </string-array>
 
-    <string-array name="camera">
-        <item>Kamera 1</item>
-        <item>Kamera 2</item>
-    </string-array>
-
-
-    <string-array name="speed_mode">
-        <item>Hız 1</item>
-        <item>Hız 2</item>
-        <item>Hız 3</item>
-        <item>Pivot</item>
+    <string name="time_setting">Zaman Ayarı</string>
+    <string-array name="time_setting">
+        <item>5 Dakika</item>
+        <item>10 Dakika</item>
+        <item>30 Dakika</item>
+        <item>60 Dakika</item>
     </string-array>
 
     <string name="battery_10">Batarya bitmek üzere. (%10)</string>
@@ -96,8 +46,7 @@
 
     <string name="button_select">Select</string>
     <string name="button_cancel">Cancel</string>
-    <string name="filechooser_name">Select a file</string>
-    <string name="location">Location</string>
     <string name="cant_read_folder">folder cannot be read</string>
     <string name="icon">Icon</string>
+    <string name="zaman_ayar">Zaman Ayarı</string>
 </resources>

@@ -4,71 +4,83 @@ import shutil
 import PyQt5.QtMultimedia as M
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, uic
 from PyQt5 import QtGui
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5 import QtCore
+from PyQt5.QtGui import QIcon, QFont, QPixmap
 from PyQt5.QtCore import QDir, Qt, QUrl, QSize
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
         QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget, QStatusBar)
 #import moviepy.editor as mp
+from pathlib import Path
 
 
 class VideoPlayer(QWidget):
 
     def __init__(self, parent=None):
         super(VideoPlayer, self).__init__(parent)
-
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         self.soundPlayer = QMediaPlayer()
 
-        btnSize = QSize(16, 16)
-        videoWidget = QVideoWidget()
-        videoWidget.setFixedSize(300, 400)
-        videoLayout = QtWidgets.QHBoxLayout()
-        videoLayout.addWidget(videoWidget)
-        viewWidget = QtWidgets.QWidget()
-        viewWidget.setLayout(videoLayout)
-        viewWidget.setFixedSize(640, 480)
+        btn_size = QSize(16, 16)
+        self.videoWidget = QVideoWidget()
+        self.videoWidget.setFixedSize(640, 480)
+        self.videoLayout = QtWidgets.QHBoxLayout()
 
-        openButton = QPushButton("Open Video")
-        openButton.setToolTip("Open Video File")
-        openButton.setStatusTip("Open Video File")
-        openButton.setFixedHeight(24)
-        openButton.setIconSize(btnSize)
-        openButton.setFont(QFont("Noto Sans", 8))
-        openButton.setIcon(QIcon.fromTheme("document-open", QIcon("D:/_Qt/img/open.png")))
-        openButton.clicked.connect(self.abrir)
+        self.imageLabel = QLabel(self)
+        self.imageLabel.resize(640, 480)
+
+        self.videoLayout.addWidget(self.imageLabel)
+        self.videoLayout.addWidget(self.videoWidget)
+
+        self.viewWidget = QtWidgets.QWidget()
+        self.viewWidget.setLayout(self.videoLayout)
+        self.viewWidget.setFixedSize(640, 480)
+
+        self.scroll = QScrollArea()
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scroll.setWidgetResizable(True)
+        #self.scroll.setWidget(self.imageLabel)
 
         self.playButton = QPushButton()
         self.playButton.setEnabled(False)
         self.playButton.setFixedHeight(24)
-        self.playButton.setIconSize(btnSize)
+        self.playButton.setIconSize(btn_size)
         self.playButton.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.playButton.clicked.connect(self.play)
 
-        self.nextButton = QPushButton('next')
+        self.stretchButton = QPushButton('Dosyalar')
+        self.stretchButton.setFixedHeight(24)
+        self.stretchButton.clicked.connect(self.stretch)
+
+        self.nextButton = QPushButton('Sonraki')
         self.nextButton.setFixedHeight(24)
-        self.nextButton.setIconSize(btnSize)
+        self.nextButton.setIconSize(btn_size)
         self.nextButton.clicked.connect(self.next_file)
 
-        self.previousButton = QPushButton('prev')
+        self.previousButton = QPushButton('Önceki')
         self.previousButton.setFixedHeight(24)
-        self.previousButton.setIconSize(btnSize)
+        self.previousButton.setIconSize(btn_size)
         self.previousButton.clicked.connect(self.prev_file)
 
-        self.extractButton = QPushButton('Extreact')
+        self.extractButton = QPushButton('Aktar')
         self.extractButton.setFixedHeight(24)
         self.extractButton.clicked.connect(self.extract_file)
 
-        self.removeButton = QPushButton('Remove')
+        self.removeButton = QPushButton('Sil')
         self.removeButton.setFixedHeight(24)
         self.removeButton.clicked.connect(self.remove)
 
-        self.zoomButton = QPushButton('zoom in')
-        self.zoomButton.setFixedHeight(24)
-        self.zoomButton.clicked.connect(self.zoom_in)
+        # self.zoomButton = QPushButton('Yakınlaştır')
+        # self.zoomButton.setFixedHeight(24)
+        # self.zoomButton.clicked.connect(self.zoom_in)
+        #
+        # self.zoomOutButton = QPushButton('Uzaklaştır')
+        # self.zoomOutButton.setFixedHeight(24)
+        # self.zoomOutButton.clicked.connect(self.zoom_out)
 
         self.positionSlider = QSlider(Qt.Horizontal)
         self.positionSlider.setRange(0, 0)
@@ -78,62 +90,51 @@ class VideoPlayer(QWidget):
         self.statusBar.setFont(QFont("Noto Sans", 7))
         self.statusBar.setFixedHeight(14)
 
-        controlLayout = QHBoxLayout()
-        controlLayout.setContentsMargins(0, 0, 0, 0)
-        controlLayout.addWidget(openButton)
-        controlLayout.addWidget(self.playButton)
-        controlLayout.addWidget(self.zoomButton)
-        controlLayout.addWidget(self.previousButton)
-        controlLayout.addWidget(self.nextButton)
-        controlLayout.addWidget(self.extractButton)
-        controlLayout.addWidget(self.removeButton)
+        control_layout = QHBoxLayout()
+        control_layout.setContentsMargins(0, 0, 0, 0)
+        control_layout.addWidget(self.stretchButton)
+        control_layout.addWidget(self.playButton)
+        # control_layout.addWidget(self.zoomButton)
+        # control_layout.addWidget(self.zoomOutButton)
+        control_layout.addWidget(self.previousButton)
+        control_layout.addWidget(self.nextButton)
+        control_layout.addWidget(self.extractButton)
+        control_layout.addWidget(self.removeButton)
 
-        controlLayout.addWidget(self.positionSlider)
+        control_layout.addWidget(self.positionSlider)
 
-        listLayout = QHBoxLayout()
+        self.listLayout = QVBoxLayout()
+
         self.treeview = QTreeView()
-        self.listview = QListView()
-        #self.listWidget = QListWidget()
-        listLayout.addWidget(self.treeview)
-        #listLayout.addWidget(self.listview)
-        #listLayout.addWidget(self.listWidget)
+        self.treeview.setFixedWidth(200)
+        self.listLayout.addWidget(self.treeview)
 
-        self.root = '/home/esetron/PycharmProjects/Gstreamer-demo/media/'
+        self.workspace = '/home/esetron/PycharmProjects/Gstreamer-demo/media/'
 
+        filters = ["*.png", "*.mp4"]
         self.dirModel = QFileSystemModel()
-        self.dirModel.setRootPath(QDir.rootPath())
+        self.dirModel.setRootPath(self.workspace)
         self.dirModel.setFilter(QDir.NoDotAndDotDot | QDir.AllDirs | QDir.Files)
-
-        self.fileModel = QFileSystemModel()
-        self.fileModel.setFilter(QDir.NoDotAndDotDot | QDir.AllDirs | QDir.Files)
-        #self.fileModel2 = QFileSystemModel()
-        #self.fileModel2.setFilter(QDir.NoDotAndDotDot | QDir.Files)
+        self.dirModel.setNameFilters(filters)
+        self.dirModel.setNameFilterDisables(0)
 
         self.treeview.setModel(self.dirModel)
-        self.listview.setModel(self.fileModel)
-        #self.listWidget.setModel(self.fileModel2)
 
-        self.treeview.setRootIndex(self.dirModel.index(self.root))
-        self.listview.setRootIndex(self.fileModel.index(self.root))
-        #self.listWidget.setRootIndex(self.fileModel2.index(path))
+        self.treeview.setRootIndex(self.dirModel.index(self.dirModel.rootPath()))
 
-        self.treeview.clicked.connect(self.on_clicked)
         self.treeview.doubleClicked.connect(self.list_clicked)
-        #self.listview.doubleClicked.connect(self.list_clicked)
 
         layout = QVBoxLayout()
-        topLayout = QHBoxLayout()
-        topLayout.addLayout(listLayout)
-        topLayout.addWidget(viewWidget)
-        #layout.addLayout(listLayout)
-        #layout.addWidget(viewWidget)
-        layout.addLayout(topLayout)
-        layout.addLayout(controlLayout)
+        top_layout = QHBoxLayout()
+        top_layout.addWidget(self.treeview)
+        top_layout.addWidget(self.viewWidget)
+        layout.addLayout(top_layout)
+        layout.addLayout(control_layout)
         layout.addWidget(self.statusBar)
 
         self.setLayout(layout)
 
-        self.mediaPlayer.setVideoOutput(videoWidget)
+        self.mediaPlayer.setVideoOutput(self.videoWidget)
         self.mediaPlayer.stateChanged.connect(self.mediaStateChanged)
         self.mediaPlayer.positionChanged.connect(self.positionChanged)
         self.soundPlayer.positionChanged.connect(self.positionChanged)
@@ -141,52 +142,84 @@ class VideoPlayer(QWidget):
         self.mediaPlayer.error.connect(self.handleError)
         self.statusBar.showMessage("Ready")
 
-
     def list_clicked(self, index):
-        print(index.data())
-        splitter = str(index.data())
-        basename = splitter.split('.')[0]
-        ext = splitter.split('.')[1]
-        sound = basename + '.wav'
-        self.sound = '/home/esetron/PycharmProjects/Gstreamer-demo/media/sound/' + sound
-        self.soundPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(self.sound)))
+        self.set_media(index)
 
-        self.filename = '/home/esetron/PycharmProjects/Gstreamer-demo/media/video/' + splitter
-        self.mediaPlayer.setMedia(
-                QMediaContent(QUrl.fromLocalFile(self.filename)))
-        self.playButton.setEnabled(True)
-        folder = os.path.dirname(self.filename)
-        print("-" + folder)
-        self.statusBar.showMessage(self.filename)
+    def next_file(self):
+        index = self.treeview.indexBelow(self.treeview.currentIndex())
+        if str(index.data()).find(".") > -1 and str(self.treeview.currentIndex().data()).find(".") > -1:
+            self.treeview.setCurrentIndex(index)
+            self.set_media(index)
 
-        self.play
-        # item = self.listview.currentIndex()
-        # print(item)
+    def prev_file(self):
+        index = self.treeview.indexAbove(self.treeview.currentIndex())
+        if str(index.data()).find(".") > -1 and str(self.treeview.currentIndex().data()).find(".") > -1:
+            self.treeview.setCurrentIndex(index)
+            self.set_media(index)
 
-    def on_clicked(self, index):
-        path = self.dirModel.fileInfo(index).absoluteFilePath()
-        self.listview.setRootIndex(self.fileModel.setRootPath(path))
+    def set_media(self, index):
+        # self.videoLayout.removeWidget(self.videoWidget)
+        # self.videoLayout.removeWidget(self.imageLabel)
+        index_item = self.dirModel.index(index.row(), 0, index.parent())
 
+        file_name = self.dirModel.fileName(index_item)
+        file_path = self.dirModel.filePath(index_item)
+        print(file_path)
+        if file_name.find(".") == -1:  # a folder
+            pass
+            # self.filesFullPathList = os.listdir(self.workspace + clicked_name)
+            # self.currentFolder = clicked_name + "/"
+        else:
+            split = file_name.split(".")
+            base_name = split[0]
+            extension = split[1]
 
-    def abrir(self):
-        fileName, _ = QFileDialog.getOpenFileName(self, "Select a media file",
-                ".", "Video Files (*png *.wav *.mp4)")
-        print(fileName)
+            if extension == "png":
+                #self.videoLayout.removeWidget(self.videoWidget)
+                #self.videoLayout.removeWidget(self.imageLabel)
+                # self.videoLayout.addWidget(self.imageLabel)
+                # self.selectedFileFullPath = file_path
+                # self.imageLabel.resize(640, 480)
+                self.play(force="pause")
+                pixmap = QPixmap(file_path)
+                self.imageLabel.setPixmap(pixmap)
+                self.imageLabel.setVisible(True)
+                self.videoWidget.setVisible(False)
+            else:
+                # self.videoLayout.removeWidget(self.imageLabel)
+                # self.videoLayout.addWidget(self.videoWidget)
+                audio_file_name = base_name + '.wav'
+                audio_file_path = file_path.replace(file_name, audio_file_name)
+                self.soundPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(audio_file_path)))
 
-        if fileName != '':
-            self.mediaPlayer.setMedia(
-                    QMediaContent(QUrl.fromLocalFile(fileName)))
-            self.playButton.setEnabled(True)
-            self.statusBar.showMessage(fileName)
-            self.play()
+                # self.selectedFileFullPath = file_path
+                self.mediaPlayer.setMedia(
+                        QMediaContent(QUrl.fromLocalFile(file_path)))
+                self.playButton.setEnabled(True)
+                # folder = os.path.dirname(self.selectedFileFullPath)
+                # print("-" + folder)
+                self.statusBar.showMessage(file_path)
 
-    def play(self):
-        if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+                self.imageLabel.setVisible(False)
+                self.videoWidget.setVisible(True)
+
+                self.play(force="play")
+
+    def play(self, force=None):
+        if force is None:
+            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+                self.soundPlayer.pause()
+                self.mediaPlayer.pause()
+            else:
+                self.soundPlayer.play()
+                self.mediaPlayer.play()
+        elif force == "pause":
             self.soundPlayer.pause()
             self.mediaPlayer.pause()
-        else:
+        elif force == "play":
             self.soundPlayer.play()
             self.mediaPlayer.play()
+
 
     def mediaStateChanged(self, state):
         if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
@@ -211,87 +244,106 @@ class VideoPlayer(QWidget):
         self.playButton.setEnabled(False)
         self.statusBar.showMessage("Error: " + self.mediaPlayer.errorString())
 
-    def next_file(self):
-        dirPath = os.path.dirname(self.filename)
-        filelist = os.listdir(dirPath)
-        for name in filelist:
-            if (dirPath + "/" + name) == self.filename:
-                if filelist.index(name) != len(filelist) -1:
-                    nextFile = filelist.index(name) +1
-                else:
-                    nextFile = filelist[0]
-
-        print(filelist[nextFile])
-        self.filename = (dirPath + "/" + filelist[nextFile])
-        self.mediaPlayer.setMedia(
-            QMediaContent(QUrl.fromLocalFile(self.filename)))
-        self.play()
-
-    def prev_file(self):
-        dirPath = os.path.dirname(self.filename)
-        filelist = os.listdir(dirPath)
-        for name in filelist:
-            if (dirPath + "/" + name) == self.filename:
-                if filelist.index(name) != len(filelist):
-                    prevFile = filelist.index(name) -1
-                else:
-                    prevFile = filelist[len(filelist) -1]
-
-
-        print(filelist[prevFile])
-        self.filename = (dirPath + "/" + filelist[prevFile])
-        self.mediaPlayer.setMedia(
-            QMediaContent(QUrl.fromLocalFile(self.filename)))
-        self.play()
-
     def remove(self):
-        folder = os.path.dirname(self.filename)
-        print(folder)
-        #os.system("rm -r " + folder)
-        pass
+        index = self.treeview.currentIndex()
+        index_item = self.dirModel.index(index.row(), 0, index.parent())
+
+        file_name = self.dirModel.fileName(index_item)
+        file_path = self.dirModel.filePath(index_item)
+
+        if file_name.find(".") > -1:
+            file_path = file_path.replace(file_name, "")
+
+        qmRemove = QtWidgets.QMessageBox
+        choise = qmRemove.question(self, '', "Emin misiniz ?", qmRemove.Yes | qmRemove.No)
+
+        if choise == qmRemove.Yes:
+            print(file_path)
+            os.system("rm -r " + file_path)
+        else:
+            print("Cancelled")
 
     def extract_file(self, index):
-        #findusbname
-        #usbPath = os.listdir.(/home/pi/media)
-        #
-        #/home/pi/media/***
-        #self.sound = '/home/esetron/PycharmProjects/Gstreamer-demo/media/sound/' + sound
-        #onlyName =str(index.data())
-        dirPath = os.path.dirname(self.filename)
-        fileList = os.listdir(dirPath)
-        for name in fileList:
-            splitter = str(index.data())
-            onlyName = splitter.split('.')[0]
-            ext = splitter.split('.')[1]
-            if ext == "mp4":
-                video = fileList[name]
-                sound = (onlyName + ".wav")
-                #os.system("cp -r /home/esetron/PycharmProjects/Gstreamer-demo/media/op1 /home/esetron/PycharmProjects/Gstreamer-demo/")
-                os.system("gst-launch-1.0 -v mp4mux name=mux1 ! filesink location=out.mp4 filesrc location=" + video + " ! decodebin ! queue ! x264enc ! h264parse ! mux1. filesrc location=" + sound + " ! decodebin ! opusenc ! mux1.")
-            elif ext == "png":
-                os.system("cp " + name + "usbPath[0]")  #usb path
+        # find usb
+        mnt_root = "/media/esetron"
+        usb_list = os.listdir(mnt_root)
+        if len(usb_list) == 0:
+            # todo add popup
+            print("usb not found popup")
+        else:
+            target_folder = mnt_root + "/" + usb_list[0] + "/"
 
-        #shutil.copytree(src,dest)
 
-    def zoom_in(self):
-        #self.scaleImage(1.25)
-        pass
+            #findusbname
+            #usbPath = os.listdir.(/home/pi/media)
+            #
+            #/home/pi/media/***
+            #self.sound = '/home/esetron/PycharmProjects/Gstreamer-demo/media/sound/' + sound
+            #onlyName =str(index.data())
 
-    def zoom_out(self):
-        #self.scaleImage(0.8)
-        pass
 
-    def normal_size(self):
-        #self.imageLabel.adjustSize()
-        #self.ScaleFactor = 1.0
-        pass
+            qmExtract = QtWidgets.QMessageBox
+            choise = qmExtract.question(self, '', "Dosyaları aktarmak istiyor musunuz?", qmExtract.Yes | QMessageBox.No)
+            if choise == qmExtract.Yes:
+                index = self.treeview.currentIndex()
+                index_item = self.dirModel.index(index.row(), 0, index.parent())
+
+                file_name = self.dirModel.fileName(index_item)
+                file_path = self.dirModel.filePath(index_item)
+
+                if file_name.find(".") > -1:
+                    file_path = file_path.replace(file_name, "")
+                    file_path = file_path[:-1]
+                folder_name = file_path.split("/")[-1]
+                source_folder = file_path + "/"
+                target_folder += folder_name
+                print("target_folder", target_folder)
+                os.mkdir(target_folder)
+                target_folder += "/"
+
+                file_list = os.listdir(file_path)
+                print("file_list", file_list)
+                for name in file_list:
+                    #splitter = str(index.data)
+                    onlyName = name.split('.')[0]
+                    ext = name.split('.')[1]
+                    if ext == "mp4":
+                        video = (source_folder + name)
+                        sound = (source_folder + onlyName + ".wav")
+                        #os.system("cp -r /home/esetron/PycharmProjects/Gstreamer-demo/media/op1 /home/esetron/PycharmProjects/Gstreamer-demo/")
+                        os.system("gst-launch-1.0 -v mp4mux name=mux1 ! filesink location=" + '"' + target_folder + name + '"' + " filesrc location=" + video + " ! decodebin ! queue ! x264enc ! h264parse ! mux1. filesrc location=" + sound + " ! decodebin ! opusenc ! mux1.")
+                    elif ext == "png":
+                        os.system("cp " + source_folder + name + " " + target_folder)
+                        #os.system("cp " + '"' + source_folder + '"' + name + '"' + target_folder + '"')  #usb path
+            else:
+                print("Canceller")
+            #shutil.copytree(src,dest)
+
+    def stretch(self):
+        self.treeview.setVisible(not self.treeview.isVisible())
+        self.treeview.update()
+
+    # def zoom_in(self):
+    #     self.imageLabel.resize(800, 600)
+    #     #self._displayed_pixmap.scaled(self.width(), self.height(), QtCore.Qt.SmoothTransformation)
+    #
+    # def zoom_out(self):
+    #     #self.imageLabel.setFixedWidth(self.imageLabel.width*1.25)
+    #     self.scaleImage(0.8)
+    #     pass
+    #
+    # def normal_size(self):
+    #     #self.imageLabel.adjustSize()
+    #     #self.ScaleFactor = 1.0
+    #     pass
 
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
     player = VideoPlayer()
     player.setWindowTitle("Player")
-    player.resize(600, 400)
+    player.setFixedSize(800, 600)
+    #player.resize(600, 400)
     player.show()
     sys.exit(app.exec_())
 
