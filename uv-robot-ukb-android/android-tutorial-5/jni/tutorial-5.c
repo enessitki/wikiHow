@@ -43,10 +43,10 @@ static jfieldID custom_data_field_id;
 static jmethodID set_message_method_id;
 static jmethodID on_gstreamer_initialized_method_id;
 
-GstElement *video_flip_element;
-gboolean flip_video = FALSE;
-GstElement *video_sink_element;
-GstElement *record_valve_element;
+//GstElement *video_flip_element;
+//gboolean flip_video = FALSE;
+//GstElement *video_sink_element;
+//GstElement *record_valve_element;
 
 int count = 0;
 
@@ -186,86 +186,15 @@ app_function (void *userdata)
   g_main_context_push_thread_default (data->context);
 
   /* Build pipeline */
-  // "udpsrc name=videosrc port=5800 ! video/mpeg, width=640, height=480, framerate=25/1, mpegversion=2 ! avdec_mpeg2video ! videoconvert ! autovideosink"
-  // "udpsrc port=5800 ! application/x-rtp, media=video, clock-rate=90000, encoding-name=JPEG, framerate=25/1, payload=26 ! rtpjpegdepay ! jpegdec ! videoconvert ! autovideosink"
-  // "udpsrc port=5800 ! application/x-rtp, media=video, clock-rate=90000, encoding-name=VP8, payload=96, framerate=25/1 ! rtpvp8depay ! vp8dec ! videoconvert ! autovideosink"
-/*
- * gst-launch-1.0 -v v4l2src device=/dev/video0 ! image/jpeg, width=640, height=480, framerate=25/1 ! jpegdec ! avenc_mpeg2video idct-algo=7 dct-algo=0 bitrate=400000 bitrate-tolerance=8000000 ! udpsink host=192.168.2.241 port=5400 async=false
- *
- * */
-//  data->pipeline =
-//          gst_parse_launch ("udpsrc name=videosrc port=5400 "
-//                            "! video/mpeg, width=640, height=480, framerate=25/1, mpegversion=2 "
-//                            "! avdec_mpeg2video "
-//                            "! tee name=t2 t2."
-//                            "! queue "
-//                            "! videoconvert "
-//                            "! glimagesink t2."
-//                            "! queue leaky=1 "
-//                            "! videoconvert "
-//                            "! x264enc "
-//                            "! h264parse "
-//                            "! mp4mux name=mux1 reserved-moov-update-period=30000000 "
-//                            "! filesink location=/storage/emulated/0/Videolar/videoout4.mp4  async=false  ",
-//                            &error);
 
     data->pipeline =
             gst_parse_launch ("udpsrc name=videosrc port=5400 "
                               "! video/mpeg, width=640, height=480, framerate=25/1, mpegversion=2 "
                               "! avdec_mpeg2video "
-                              "! videoflip method=0 name=flip "
-                              "! textoverlay text=test valignment=top halignment=left font-desc=\"Sans, 20\" name=overlay "
                               "! videoconvert "
-                              "! tee name=t1 t1. "
-                              "! queue leaky=1 "
-                              "! fakesink enable-last-sample=true name=videosink t1. "
-                              "! queue leaky=1 "
-                              "! glimagesink "
-                              "udpsrc name=audiosrc port=5800 "
-                              "! application/x-rtp, media=(string)audio, clock-rate=(int)8000, encoding-name=(string)PCMA, payload=(int)8 "
-                              "! rtppcmadepay "
-                              "! queue min-threshold-bytes=10000 "
-                              "! alawdec "
-                              "! queue "
-                              "! autoaudiosink async=true ",
+                              "! glimagesink ",
                               &error);
-//  data->pipeline =
-//          gst_parse_launch ("avimux name=mux1 ! queue ! filesink location=/storage/emulated/0/Videolar/videoout8.avi async=false "
-//                            "udpsrc name=videosrc port=5400 "
-//                            "! video/mpeg, width=640, height=480, framerate=25/1, mpegversion=2 "
-//                            "! avdec_mpeg2video "
-//                            "! videoflip method=0 name=flip "
-//                            "! textoverlay text=test valignment=top halignment=left font-desc=\"Sans, 20\" name=overlay "
-//                            "! tee name=t2 t2."
-//                            "! queue "
-//                            "! videoconvert "
-//                            "! tee name=t1 t1. "
-//                            "! queue leaky=1 "
-//                            "! fakesink enable-last-sample=true name=videosink t1. "
-//                            "! queue leaky=1 "
-//                            "! glimagesink t2."
-//                            "! queue "
-//                            "! jpegenc name=recordqueue "
-//                            "! jpegparse "
-//                            "! mux1. ",
-//                            &error);
 
-
-//    "! videoconvert ! videoscale "
-//    "! video/x-raw, format=I420, width=1280, height=720, interlace-mode=progressive, "
-//    "multiview-mode=mono, multiview-flags=0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, "
-//    "chroma-site=mpeg2, colorimetry=1:4:0:0, framerate=25/1 "
-//
-//    "udpsrc name=audiosrc port=5800 "
-//    "! application/x-rtp, media=(string)audio, clock-rate=(int)8000, encoding-name=(string)PCMA, payload=(int)8 "
-//    "! rtppcmadepay "
-//    "! tee name=t3 t3. "
-//    "! queue "
-//    "! alawdec "
-//    "! queue "
-//    "! autoaudiosink async=false t3. "
-//    "! queue "
-//    "! mux1. "
   if (error) {
     gchar *message =
             g_strdup_printf ("Unable to build pipeline: %s", error->message);
@@ -286,8 +215,8 @@ app_function (void *userdata)
     return NULL;
   }
   // elements
-  video_flip_element = gst_bin_get_by_name(GST_BIN(data->pipeline),"flip");
-  video_sink_element = gst_bin_get_by_name(GST_BIN(data->pipeline),"videosink");
+//  video_flip_element = gst_bin_get_by_name(GST_BIN(data->pipeline),"flip");
+//  video_sink_element = gst_bin_get_by_name(GST_BIN(data->pipeline),"videosink");
 //  record_valve_element = gst_bin_get_by_name(GST_BIN(data->pipeline),"recordqueue");
 
   /* Instruct the bus to emit signals for each received message, and connect to the interesting signals */
@@ -455,90 +384,90 @@ gst_native_surface_finalize (JNIEnv * env, jobject thiz)
   data->initialized = FALSE;
 }
 
-static void gst_native_video_flip(JNIEnv * env )
-{
-    flip_video = ! flip_video;
-    if (flip_video)
-        g_object_set(video_flip_element,"method", 2, NULL);
-    else
-        g_object_set(video_flip_element,"method", 0, NULL);
-
-}
-
-static void gst_native_video_flip_to_0(JNIEnv * env )
-{
-  if (flip_video){
-    g_object_set(video_flip_element, "method", 0, NULL);
-    flip_video = FALSE;
-  }
-}
-
-static void gst_native_video_flip_to_2(JNIEnv * env )
-{
-  if(!flip_video) {
-      g_object_set(video_flip_element, "method", 2, NULL);
-      flip_video = TRUE;
-  }
-}
-
-static void gst_native_screen_shot(JNIEnv * env, jobject thiz, jstring pathObj)
-{
-  GstCaps *caps;
-  GstSample *from_sample=NULL;
-  GstSample *to_sample=NULL;
-  GError *err = NULL;
-  GstBuffer *buf;
-  GstMapInfo map_info;
-
-  const char * path;
-
-  path = (*env)->GetStringUTFChars( env, pathObj, NULL ) ;
-
-  g_object_get (video_sink_element, "last-sample", &from_sample, NULL);
-  if (from_sample == NULL) {
-    GST_ERROR ("Error getting last sample form sink");
-  }
-
-  caps = gst_caps_from_string ("image/jpeg, width=640, height=480");
-  to_sample = gst_video_convert_sample (from_sample, caps, GST_CLOCK_TIME_NONE, &err);
-
-  gst_caps_unref (caps);
-  gst_sample_unref (from_sample);
-
-  if (to_sample == NULL && err) {
-    GST_ERROR ("Error converting frame: %s", err->message);
-    g_error_free (err);
-  }
-
-  buf = gst_sample_get_buffer (to_sample);
-  if (gst_buffer_map (buf, &map_info, GST_MAP_READ)) {
-    if (!g_file_set_contents (path, (const char *) map_info.data,
-                              map_info.size, &err)) {
-      GST_WARNING ("Could not save thumbnail: %s", err->message);
-      g_error_free (err);
-    }
-  }
-  gst_sample_unref (to_sample);
-  gst_buffer_unmap (buf, &map_info);
-
-}
-
-static void gst_native_start_record(JNIEnv * env, jobject thiz, jstring pathObj){
-    const char * path;
-
-    path = (*env)->GetStringUTFChars( env, pathObj, NULL ) ;
-
-    if(path == ""){
-        gst_element_set_state(record_valve_element,GST_STATE_READY);
-        gst_element_set_state(record_valve_element,GST_STATE_PLAYING);
-//        g_object_set(record_valve_element,"drop", 1, NULL);
-    } else{
-        gst_element_set_state(record_valve_element,GST_STATE_NULL);
-//        gst_element_send_event(record_valve_element,gst_event_new_eos());
-
-//        g_object_set(record_valve_element,"drop", 0, NULL);
-    }
-}
+//static void gst_native_video_flip(JNIEnv * env )
+//{
+//    flip_video = ! flip_video;
+//    if (flip_video)
+//        g_object_set(video_flip_element,"method", 2, NULL);
+//    else
+//        g_object_set(video_flip_element,"method", 0, NULL);
+//
+//}
+//
+//static void gst_native_video_flip_to_0(JNIEnv * env )
+//{
+//  if (flip_video){
+//    g_object_set(video_flip_element, "method", 0, NULL);
+//    flip_video = FALSE;
+//  }
+//}
+//
+//static void gst_native_video_flip_to_2(JNIEnv * env )
+//{
+//  if(!flip_video) {
+//      g_object_set(video_flip_element, "method", 2, NULL);
+//      flip_video = TRUE;
+//  }
+//}
+//
+//static void gst_native_screen_shot(JNIEnv * env, jobject thiz, jstring pathObj)                     //Silinecek
+//{
+//  GstCaps *caps;
+//  GstSample *from_sample=NULL;
+//  GstSample *to_sample=NULL;
+//  GError *err = NULL;
+//  GstBuffer *buf;
+//  GstMapInfo map_info;
+//
+//  const char * path;
+//
+//  path = (*env)->GetStringUTFChars( env, pathObj, NULL ) ;
+//
+//  g_object_get (video_sink_element, "last-sample", &from_sample, NULL);
+//  if (from_sample == NULL) {
+//    GST_ERROR ("Error getting last sample form sink");
+//  }
+//
+//  caps = gst_caps_from_string ("image/jpeg, width=640, height=480");
+//  to_sample = gst_video_convert_sample (from_sample, caps, GST_CLOCK_TIME_NONE, &err);
+//
+//  gst_caps_unref (caps);
+//  gst_sample_unref (from_sample);
+//
+//  if (to_sample == NULL && err) {
+//    GST_ERROR ("Error converting frame: %s", err->message);
+//    g_error_free (err);
+//  }
+//
+//  buf = gst_sample_get_buffer (to_sample);
+//  if (gst_buffer_map (buf, &map_info, GST_MAP_READ)) {
+//    if (!g_file_set_contents (path, (const char *) map_info.data,
+//                              map_info.size, &err)) {
+//      GST_WARNING ("Could not save thumbnail: %s", err->message);
+//      g_error_free (err);
+//    }
+//  }
+//  gst_sample_unref (to_sample);
+//  gst_buffer_unmap (buf, &map_info);
+//
+//}
+//
+//static void gst_native_start_record(JNIEnv * env, jobject thiz, jstring pathObj){                   // Silinecek
+//    const char * path;
+//
+//    path = (*env)->GetStringUTFChars( env, pathObj, NULL ) ;
+//
+//    if(path == ""){
+//        gst_element_set_state(record_valve_element,GST_STATE_READY);
+//        gst_element_set_state(record_valve_element,GST_STATE_PLAYING);
+////        g_object_set(record_valve_element,"drop", 1, NULL);
+//    } else{
+//        gst_element_set_state(record_valve_element,GST_STATE_NULL);
+////        gst_element_send_event(record_valve_element,gst_event_new_eos());
+//
+////        g_object_set(record_valve_element,"drop", 0, NULL);
+//    }
+//}
 
 
 /* List of implemented native methods */
@@ -550,12 +479,12 @@ static JNINativeMethod native_methods[] = {
         {"nativeSurfaceInit", "(Ljava/lang/Object;)V",
                 (void *) gst_native_surface_init},
         {"nativeSurfaceFinalize", "()V", (void *) gst_native_surface_finalize},
-        {"nativeClassInit", "()Z", (void *) gst_native_class_init},
-        {"nativeVideoFlip", "()V", (void *) gst_native_video_flip},
-        {"nativeVideoFlipTo0", "()V", (void *) gst_native_video_flip_to_0},
-        {"nativeVideoFlipTo2", "()V", (void *) gst_native_video_flip_to_2},
-        {"nativeScreenShot", "(Ljava/lang/String;)V", (void *) gst_native_screen_shot},
-        {"nativeStartRecord", "(Ljava/lang/String;)V", (void *) gst_native_start_record}
+        {"nativeClassInit", "()Z", (void *) gst_native_class_init}
+//        {"nativeVideoFlip", "()V", (void *) gst_native_video_flip},
+//        {"nativeVideoFlipTo0", "()V", (void *) gst_native_video_flip_to_0},
+//        {"nativeVideoFlipTo2", "()V", (void *) gst_native_video_flip_to_2},
+//        {"nativeScreenShot", "(Ljava/lang/String;)V", (void *) gst_native_screen_shot},
+//        {"nativeStartRecord", "(Ljava/lang/String;)V", (void *) gst_native_start_record}
 };
 
 /* Library initializer */
