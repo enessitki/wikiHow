@@ -17,28 +17,29 @@
         android:gravity="center_horizontal" />
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="312dp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="0dp"
         android:layout_marginBottom="16dip"
         android:gravity="fill_horizontal"
         android:orientation="horizontal">
 
         <FrameLayout
-            android:layout_width="601dp"
+            android:layout_width="680dp"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+
             <FrameLayout
                 android:id="@+id/layout_video"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
                 <org.freedesktop.gstreamer.tutorials.tutorial_5.GStreamerSurfaceView
                     android:id="@+id/surface_video"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:layout_gravity="center_vertical|center_horizontal" />
             </FrameLayout>
 
@@ -55,25 +56,23 @@
                 custom:JV_buttonSizeRatio="15%"
                 custom:JV_fixedCenter="false" />
 
-            <!--            <io.github.controlwear.virtual.joystick.android.JoystickView-->
-            <!--                xmlns:custom="http://schemas.android.com/apk/res-auto"-->
-            <!--                android:id="@+id/control_2"-->
-            <!--                android:layout_width="125dp"-->
-            <!--                android:layout_height="125dp"-->
-            <!--                custom:JV_buttonColor="@color/secondary_color_dark"-->
-            <!--                custom:JV_buttonSizeRatio="15%"-->
-            <!--                custom:JV_borderColor="#00796B"-->
-            <!--                custom:JV_backgroundColor="#00000000"-->
-            <!--                custom:JV_borderWidth="4dp"-->
-            <!--                custom:JV_fixedCenter="false"-->
-            <!--                android:layout_gravity="end|bottom"/>-->
-
+            <ImageButton
+                android:id="@+id/emergency_button"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_gravity="right|top"
+                android:background="@drawable/emergency_128"
+                android:contentDescription="@string/button_emergency"
+                android:onClick="emergencyStop"
+                android:visibility="visible" />
 
         </FrameLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:gravity="right"
             android:orientation="vertical">
 
             <LinearLayout
@@ -84,7 +83,7 @@
 
                 <SeekBar
                     android:id="@+id/image_ika_battery"
-                    android:layout_width="92dp"
+                    android:layout_width="106dp"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="@dimen/spacer"
                     android:clickable="false"
@@ -106,165 +105,104 @@
 
             </LinearLayout>
 
+            <ImageButton
+                android:id="@+id/button_connect"
+                android:layout_width="90dp"
+                android:layout_height="68dp"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_wifi_white_24dp"
+                android:contentDescription="@string/button_connect"
+                android:onClick="checkConnection"
+                android:text="@string/button_connect" />
+
+            <RelativeLayout
+                android:layout_width="94dp"
+                android:layout_height="75dp"
+                android:layout_gravity="center">
+
+                <View
+                    android:id="@+id/view1"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerInParent="true"
+                    android:background="#E4E4E4" />
+
+                <ImageView
+                    android:id="@+id/imageView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/view1"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/up_arrow_24_white" />
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/view1"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/down_arrow_24_yellow" />
+
+                <ImageView
+                    android:id="@+id/imageView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/view1"
+                    android:src="@drawable/left_arrow_24_red" />
+
+                <ImageView
+                    android:id="@+id/imageView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/view1"
+                    android:src="@drawable/right_arrow_24_white" />
+
+            </RelativeLayout>
+
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="94dp"
                 android:layout_height="274dp"
                 android:orientation="vertical">
 
-                <ImageButton
-                    android:id="@+id/button_config"
-                    android:layout_width="match_parent"
-                    android:layout_height="67dp"
-                    android:background="@drawable/ic_settings_white_24dp"
-                    android:contentDescription="@string/button_config"
-                    android:onClick="showConfigDialog"
-                    android:text="@string/button_config" />
-
-                <Spinner
-                    android:id="@+id/Zaman_Ayarı"
-                    android:layout_width="match_parent"
-                    android:layout_height="35dp"
-                    android:background="@color/primary_color_light"
-                    android:contextClickable="true"
-                    android:entries="@array/time_setting"
-                    android:text="@string/time_setting"
-                    android:textSize="@dimen/text_size" />
-
-                <Spinner
+                <!--                <Spinner
                     android:id="@+id/drive_mode"
                     android:layout_width="match_parent"
-                    android:layout_height="35dp"
+                    android:layout_height="51dp"
                     android:background="@color/primary_color_light"
                     android:contextClickable="true"
-                    android:entries="@array/drive_mode" />
+                    android:entries="@array/drive_mode" />-->
 
-<!--                <ImageButton-->
-<!--                    android:id="@+id/button_connect"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="67dp"-->
-<!--                    android:background="@drawable/ic_wifi_white_24dp"-->
-<!--                    android:contentDescription="@string/button_connect"-->
-<!--                    android:onClick="checkConnection"-->
-<!--                    android:text="@string/button_connect" />-->
-
-                <!--            <ImageButton-->
-                <!--                android:id="@+id/button_video_flip"-->
-                <!--                android:layout_width="@dimen/icon_size"-->
-                <!--                android:layout_height="@dimen/icon_size"-->
-                <!--                android:contentDescription="@string/button_video_flip"-->
-                <!--                android:background="@drawable/ic_rotate_left_white_24dp"-->
-                <!--                android:text="@string/button_video_flip"-->
-                <!--                android:onClick="flipVideo" />-->
-
-                <!--            <ImageButton-->
-                <!--                android:id="@+id/button_screen_shot"-->
-                <!--                android:layout_width="@dimen/icon_size"-->
-                <!--                android:layout_height="@dimen/icon_size"-->
-                <!--                android:contentDescription="@string/button_screen_shot"-->
-                <!--                android:background="@drawable/ic_add_a_photo_white_24dp"-->
-                <!--                android:text="@string/button_screen_shot"-->
-                <!--                android:onClick="screenShot"/>-->
+                <ImageButton
+                    android:id="@+id/button_speed"
+                    android:layout_width="92dp"
+                    android:layout_height="70dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/medium_speed"
+                    android:onClick="setSpeedState"
+                    android:text="@string/speed_control" />
 
                 <ImageButton
                     android:id="@+id/button_lights_control"
-                    android:layout_width="match_parent"
-                    android:layout_height="71dp"
-                    android:background="@drawable/ic_light-bulb-off"
-                    android:onClick="startMotionDetection"
-                    android:text="@string/button_light_control"
-                    tools:src="@drawable/light-bulb-on" />
-
-                <!--            <ImageButton-->
-                <!--                android:id="@+id/button_record"-->
-                <!--                android:layout_width="@dimen/icon_size"-->
-                <!--                android:layout_height="@dimen/icon_size"-->
-                <!--                android:contentDescription="@string/button_record"-->
-                <!--                android:background="@drawable/ic_stop_white_24dp"-->
-                <!--                android:text="@string/button_record"-->
-                <!--                android:onClick="startRecoding"/>-->
+                    android:layout_width="92dp"
+                    android:layout_height="70dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/uv_lamp_on_blue_128"
+                    android:onClick="setUVLampState"
+                    android:text="@string/button_light_control" />
 
                 <ImageButton
                     android:id="@+id/button_play"
-                    android:layout_width="match_parent"
-                    android:layout_height="76dp"
+                    android:layout_width="79dp"
+                    android:layout_height="79dp"
+                    android:layout_gravity="center"
                     android:background="@drawable/ic_play_arrow_white_24dp"
                     android:contentDescription="@string/button_play"
-                    android:onClick="playStream"
+                    android:onClick="runVehicle"
                     android:text="@string/button_play" />
 
             </LinearLayout>
-
-            <!--            <LinearLayout-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:orientation="horizontal"-->
-            <!--                android:gravity="center">-->
-
-            <!--                <ImageView-->
-            <!--                    android:id="@+id/image_direction"-->
-            <!--                    android:layout_width="@dimen/icon_size"-->
-            <!--                    android:layout_height="@dimen/icon_size"-->
-            <!--                    android:contentDescription="@string/image_direction"-->
-            <!--                    android:background="@drawable/ic_navigation_white_24dp"-->
-            <!--                    android:text="@string/image_direction"/>-->
-
-            <!--                <ImageView-->
-            <!--                    android:id="@+id/image_arm_position"-->
-            <!--                    android:layout_width="@dimen/icon_size"-->
-            <!--                    android:layout_height="@dimen/icon_size"-->
-            <!--                    android:contentDescription="@string/image_arm_position"-->
-            <!--                    android:background="@drawable/ic_arrow_back_white_24dp"-->
-            <!--                    android:text="@string/image_arm_position" />-->
-
-            <!--            </LinearLayout>-->
-
-            <!--            <LinearLayout-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:orientation="horizontal"-->
-            <!--                android:gravity="center">-->
-
-            <!--                <ImageView-->
-            <!--                    android:id="@+id/image_led_front"-->
-            <!--                    android:layout_width="@dimen/icon_size"-->
-            <!--                    android:layout_height="@dimen/icon_size"-->
-            <!--                    android:contentDescription="@string/image_led_front"-->
-            <!--                    android:background="@drawable/ic_brightness_1_black_24dp"-->
-            <!--                    android:text="@string/image_led_front"-->
-            <!--                    android:onClick="setFrontLedState"/>-->
-
-            <!--                <ImageView-->
-            <!--                    android:id="@+id/image_led_back"-->
-            <!--                    android:layout_width="@dimen/icon_size"-->
-            <!--                    android:layout_height="@dimen/icon_size"-->
-            <!--                    android:contentDescription="@string/image_led_back"-->
-            <!--                    android:background="@drawable/ic_brightness_1_black_24dp"-->
-            <!--                    android:text="@string/image_led_back"-->
-            <!--                    android:onClick="setBackLedState"/>-->
-
-            <!--            </LinearLayout>-->
-
-            <!--            <Spinner-->
-            <!--                android:id="@+id/spinner_drive_speed"-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:contextClickable="true"-->
-            <!--                android:entries="@array/speed_mode"/>-->
-
-            <!--            <Spinner-->
-            <!--                android:id="@+id/spinner_drive_mode"-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:contextClickable="true"-->
-            <!--                android:entries="@array/drive_mode"/>-->
-
-            <!--            <Spinner-->
-            <!--                android:id="@+id/spinner_camera"-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:contextClickable="true"-->
-            <!--                android:entries="@array/camera"/>-->
-
 
         </LinearLayout>
 
