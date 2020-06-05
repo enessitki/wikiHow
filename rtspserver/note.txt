@@ -1,1 +1,8 @@
 sudo apt-get -y install gstreamer1.0-rtsp gstreamer1.0-rtsp-dbg libgstrtspserver-1.0-0 libgstrtspserver-1.0-0 libgstrtspserver-1.0-dev libgstrtspserver-1.0-doc
+
+https://lazka.github.io/pgi-docs/GstRtspServer-1.0/classes.html
+
+
+factory.set_launch('(v4l2src device=/dev/video0 ! video/x-raw, width=640, height=480, framerate=30/1 ! videoconvert ! video/x-raw, format=I420 '
+                   '! jpegenc ! rtpjpegpay name=pay0 )')
+# gst-launch-1.0 -v rtspsrc name=kgmsrc location="rtsp://127.0.0.1:8554/test" latency=0 protocols=GST_RTSP_LOWER_TRANS_UDP async-handling=true timeout=0 udp-reconnect=0 ! rtpjpegdepay ! jpegdec ! xvimagesink

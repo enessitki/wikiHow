@@ -26,17 +26,26 @@ from gi.repository import GObject, Gst, GstVideo, GstRtspServer
 Gst.init(None)
 
 
+def fn(x,y=5):
+    pass
+
+fn(y=10, x=10)
+
+
 mainloop = GObject.MainLoop()
 
 server = GstRtspServer.RTSPServer()
+server.set_service("5400")
 
 mounts = server.get_mount_points()
 
 factory = GstRtspServer.RTSPMediaFactory()
 # factory.set_launch('( videotestsrc is-live=1 ! x264enc speed-preset=ultrafast tune=zerolatency ! rtph264pay name=pay0 pt=96 )')
 factory.set_launch('(v4l2src device=/dev/video0 ! video/x-raw, width=640, height=480, framerate=30/1 ! videoconvert ! video/x-raw, format=I420 '
-                   ' jpegenc ! rtpjpegpay name=pay0 )')
+                   '! jpegenc ! rtpjpegpay name=pay0 )')
 # '! x264enc speed-preset=ultrafast tune=zerolatency ! rtph264pay name=pay0 )')
+
+# gst-launch-1.0 -v rtspsrc name=kgmsrc location="rtsp://127.0.0.1:8554/test" latency=0 protocols=GST_RTSP_LOWER_TRANS_UDP async-handling=true timeout=0 udp-reconnect=0 ! rtpjpegdepay ! jpegdec ! xvimagesink
 
 
 mounts.add_factory("/test", factory)
