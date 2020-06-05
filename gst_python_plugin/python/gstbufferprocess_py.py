@@ -141,7 +141,7 @@ class GstBufferProcessPy(GstBase.BaseTransform):
             #     if self.filler is None:
             #         self.set_filler(self.sinkpad.get_current_caps())
             #     outbuffer.fill(0, self.filler.tobytes())
-            outbuffer.pts += int(self.delay*1e9)
+            outbuffer.pts += int(1*1e9)
             print(inbuffer.pts, outbuffer.pts)
 
         except Exception as e:
