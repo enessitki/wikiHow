@@ -52,5 +52,5 @@ mounts.add_factory("/test", factory)
 
 server.attach(None)
 
-print("stream ready at rtsp://127.0.0.1:8554/test")
+print("stream ready at rtsp://127.0.0.1:5400/test")
 mainloop.run()
