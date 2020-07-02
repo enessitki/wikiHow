@@ -17,33 +17,55 @@ from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
 from pathlib import Path
 
 
+class MoveableLabel(QtWidgets.QLabel):
+    def __init__(self, parent=None):
+        super(MoveableLabel, self).__init__(parent=parent)
+        self.x0 = None
+        self.y0 = None
+
+    def mouseMoveEvent(self, ev: QtGui.QMouseEvent) -> None:
+        if self.isPressed:
+            if self.x0 is None:
+                self.x0 = ev.globalX()
+                self.y0 = ev.globalY()
+            else:
+                dx = self.geometry().x() - self.x0 + ev.globalX()
+                dy = self.geometry().y() - self.y0 + ev.globalY()
+                self.move(dx, dy)
+                self.x0 = ev.globalX()
+                self.y0 = ev.globalY()
+
+    def mouseReleaseEvent(self, a0: QtGui.QMouseEvent) -> None:
+        self.isPressed = False
+        self.x0 = None
+        self.y0 = None
+
+    def mousePressEvent(self, a0: QtGui.QMouseEvent) -> None:
+        self.isPressed = True
+
+
 class VideoPlayer(QWidget):
 
     def __init__(self, parent=None):
         super(VideoPlayer, self).__init__(parent)
+        self.setWindowTitle("Kayıt İzleme Programı")
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         self.soundPlayer = QMediaPlayer()
 
         btn_size = QSize(16, 16)
         self.videoWidget = QVideoWidget()
-        self.videoWidget.setFixedSize(640, 480)
         self.videoLayout = QtWidgets.QHBoxLayout()
+        self.videoLayout.setAlignment(Qt.AlignCenter)
 
-        self.imageLabel = QLabel(self)
-        self.imageLabel.resize(640, 480)
+        self.imageLabel = MoveableLabel(self)
+        self.imageLabel.setAlignment(Qt.AlignCenter)
+        self.imageLabel.setScaledContents(True)
 
         self.videoLayout.addWidget(self.imageLabel)
         self.videoLayout.addWidget(self.videoWidget)
 
         self.viewWidget = QtWidgets.QWidget()
         self.viewWidget.setLayout(self.videoLayout)
-        self.viewWidget.setFixedSize(640, 480)
-
-        self.scroll = QScrollArea()
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.scroll.setWidgetResizable(True)
-        #self.scroll.setWidget(self.imageLabel)
 
         self.playButton = QPushButton()
         self.playButton.setEnabled(False)
@@ -74,13 +96,13 @@ class VideoPlayer(QWidget):
         self.removeButton.setFixedHeight(24)
         self.removeButton.clicked.connect(self.remove)
 
-        # self.zoomButton = QPushButton('Yakınlaştır')
-        # self.zoomButton.setFixedHeight(24)
-        # self.zoomButton.clicked.connect(self.zoom_in)
-        #
-        # self.zoomOutButton = QPushButton('Uzaklaştır')
-        # self.zoomOutButton.setFixedHeight(24)
-        # self.zoomOutButton.clicked.connect(self.zoom_out)
+        self.zoomButton = QPushButton('Yakınlaştır')
+        self.zoomButton.setFixedHeight(24)
+        self.zoomButton.clicked.connect(self.zoom_in)
+
+        self.zoomOutButton = QPushButton('Uzaklaştır')
+        self.zoomOutButton.setFixedHeight(24)
+        self.zoomOutButton.clicked.connect(self.zoom_out)
 
         self.positionSlider = QSlider(Qt.Horizontal)
         self.positionSlider.setRange(0, 0)
@@ -94,8 +116,8 @@ class VideoPlayer(QWidget):
         control_layout.setContentsMargins(0, 0, 0, 0)
         control_layout.addWidget(self.stretchButton)
         control_layout.addWidget(self.playButton)
-        # control_layout.addWidget(self.zoomButton)
-        # control_layout.addWidget(self.zoomOutButton)
+        control_layout.addWidget(self.zoomButton)
+        control_layout.addWidget(self.zoomOutButton)
         control_layout.addWidget(self.previousButton)
         control_layout.addWidget(self.nextButton)
         control_layout.addWidget(self.extractButton)
@@ -106,7 +128,7 @@ class VideoPlayer(QWidget):
         self.listLayout = QVBoxLayout()
 
         self.treeview = QTreeView()
-        self.treeview.setFixedWidth(200)
+        self.treeview.setFixedWidth(120)
         self.listLayout.addWidget(self.treeview)
 
         self.workspace = '/home/esetron/PycharmProjects/Gstreamer-demo/media/'
@@ -114,12 +136,14 @@ class VideoPlayer(QWidget):
         filters = ["*.png", "*.mp4"]
         self.dirModel = QFileSystemModel()
         self.dirModel.setRootPath(self.workspace)
+
         self.dirModel.setFilter(QDir.NoDotAndDotDot | QDir.AllDirs | QDir.Files)
         self.dirModel.setNameFilters(filters)
-        self.dirModel.setNameFilterDisables(0)
+        self.dirModel.setNameFilterDisables(False)
 
         self.treeview.setModel(self.dirModel)
-
+        for i in range(1, self.treeview.model().columnCount()):                                                         #hide treeview sections
+            self.treeview.header().hideSection(i)
         self.treeview.setRootIndex(self.dirModel.index(self.dirModel.rootPath()))
 
         self.treeview.doubleClicked.connect(self.list_clicked)
@@ -140,20 +164,22 @@ class VideoPlayer(QWidget):
         self.soundPlayer.positionChanged.connect(self.positionChanged)
         self.mediaPlayer.durationChanged.connect(self.durationChanged)
         self.mediaPlayer.error.connect(self.handleError)
-        self.statusBar.showMessage("Ready")
+        self.statusBar.showMessage("Hazır")
 
     def list_clicked(self, index):
         self.set_media(index)
 
     def next_file(self):
         index = self.treeview.indexBelow(self.treeview.currentIndex())
-        if str(index.data()).find(".") > -1 and str(self.treeview.currentIndex().data()).find(".") > -1:
+        if (str(index.data()).find(".png") > -1 or str(index.data()).find(".mp4") > -1) and\
+                (str(self.treeview.currentIndex().data()).find(".") > -1 or str(self.treeview.currentIndex().data()).find(".mp4") > -1):
             self.treeview.setCurrentIndex(index)
             self.set_media(index)
 
     def prev_file(self):
         index = self.treeview.indexAbove(self.treeview.currentIndex())
-        if str(index.data()).find(".") > -1 and str(self.treeview.currentIndex().data()).find(".") > -1:
+        if (str(index.data()).find(".png") > -1 or str(index.data()).find(".mp4") > -1) and\
+                (str(self.treeview.currentIndex().data()).find(".") > -1 or str(self.treeview.currentIndex().data()).find(".mp4") > -1):
             self.treeview.setCurrentIndex(index)
             self.set_media(index)
 
@@ -184,7 +210,11 @@ class VideoPlayer(QWidget):
                 pixmap = QPixmap(file_path)
                 self.imageLabel.setPixmap(pixmap)
                 self.imageLabel.setVisible(True)
+                self.normal_size()
+                # self.imageLabel.scroll(0, -10, QLabel.rect())
+                # self.scroll.setVisible(True)
                 self.videoWidget.setVisible(False)
+
             else:
                 # self.videoLayout.removeWidget(self.imageLabel)
                 # self.videoLayout.addWidget(self.videoWidget)
@@ -206,20 +236,19 @@ class VideoPlayer(QWidget):
                 self.play(force="play")
 
     def play(self, force=None):
-        if force is None:
-            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-                self.soundPlayer.pause()
-                self.mediaPlayer.pause()
-            else:
-                self.soundPlayer.play()
-                self.mediaPlayer.play()
-        elif force == "pause":
+        # if force is None:
+        if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
             self.soundPlayer.pause()
             self.mediaPlayer.pause()
-        elif force == "play":
+        else:
             self.soundPlayer.play()
             self.mediaPlayer.play()
-
+        # elif force == "pause":
+        #     self.soundPlayer.pause()
+        #     self.mediaPlayer.pause()
+        # elif force == "play":
+        #     self.soundPlayer.play()
+        #     self.mediaPlayer.play()
 
     def mediaStateChanged(self, state):
         if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
@@ -323,11 +352,17 @@ class VideoPlayer(QWidget):
         self.treeview.setVisible(not self.treeview.isVisible())
         self.treeview.update()
 
-    # def zoom_in(self):
+    def normal_size(self):
+        self.imageLabel.adjustSize()
+        self.scaleFactor = 1.0
+
+    def zoom_in(self):
+        self.scaleImage(1.25)
     #     self.imageLabel.resize(800, 600)
     #     #self._displayed_pixmap.scaled(self.width(), self.height(), QtCore.Qt.SmoothTransformation)
     #
-    # def zoom_out(self):
+    def zoom_out(self):
+        self.scaleImage(0.75)
     #     #self.imageLabel.setFixedWidth(self.imageLabel.width*1.25)
     #     self.scaleImage(0.8)
     #     pass
@@ -337,14 +372,31 @@ class VideoPlayer(QWidget):
     #     #self.ScaleFactor = 1.0
     #     pass
 
+    def fitToWindow(self):
+        fitToWindow = self.fitToWindowAct.isChecked()
+        self.scrollArea.setWidgetResizable(fitToWindow)
+        if not fitToWindow:
+            self.normalSize()
+
+        self.updateActions()
+
+    def scaleImage(self, factor):
+        if self.scaleFactor*factor <= 3.0 and self.scaleFactor*factor >= 1.0:
+            self.scaleFactor *= factor
+            self.imageLabel.resize(self.scaleFactor * self.imageLabel.pixmap().size())
+
+        self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
+        self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
+
+    def adjustScrollBar(self, scrollBar, factor):
+        scrollBar.setValue(int(factor * scrollBar.value()
+                               + ((factor - 1) * scrollBar.pageStep() / 2)))
+
+
 if __name__ == '__main__':
-    import sys
     app = QApplication(sys.argv)
     player = VideoPlayer()
-    player.setWindowTitle("Player")
-    player.setFixedSize(800, 600)
-    #player.resize(600, 400)
-    player.show()
+    player.showMaximized()
     sys.exit(app.exec_())
 
 
