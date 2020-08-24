@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="windows-1254"?>
+<const>
+    <login_tab value = "Giriş"/>
+    <config_tab value = "Ayarlar"/>
+    <log_tab value = "Kayıtlar"/>
+
+    <login value = "Giriş Yap"/>
+    <logout value = "Çıkış"/>
+    <ika_panel value = "Panel"/>
+    <save_and_continue value = "Kaydet"/>
+    <user_name value = "Kullanıcı Adı"/>
+    <name value = "İsim"/>
+    <last_name value = "Soy İsim"/>
+    <password value = "Şifre"/>
+    <password_again value = "Şifre (tekrar)"/>
+    <new_password value = "Yeni Şifre"/>
+    <new_password_again value = "Yeni Şifre (tekrar)"/>
+    <ukb_id value ="UKB ID"/>
+
+    <second_password_mismatch value = 'Girilen şifreler aynı değil.'/>
+    <wrong_ukb_id value ="UKB ID yanlış girilmiştir."/>
+    <user_registered value = 'İşlem başarıyla gerçekleşmiştir.'/>
+    <user_name_inuse value = 'Kullanıcı ismi başka biri tarafından kullanılmaktadır.'/>
+    <not_registered value = 'Kayıt bulunmamaktadır.'/>
+    <incorrect_password value = 'Şifre yanlış.'/>
+    <logged_in value = 'Giriş yapıldı.'/>
+    <no_active_connection value = 'UKB herhangi bir araca bağlı değil.'/>
+    <no_ika_found value = 'İnsansız Kara Aracı bulunamadı'/>
+    <scan value = 'Tara' />
+    <scanning value = 'Taranıyor ...' />
+    <connect value = 'Bağlan' />
+    <connecting value = 'Bağlanılıyor ...' />
+    <disconnected value = 'Bağlantı kesildi.' />
+    <ika_found value ='İnsansız Kara Aracı bulundu.'/>
+    <connection_fail value ='İnsansız Kara Aracına bağlanılamadı.'/>
+    <disconnect value = 'Bağlantıyı Kes'/>
+    <connection_succes value = 'İnsansız Kara Aracına bağlanıldı.'/>
+    <no_section value = 'Bir seçim yapılmadı.'/>
+    <save_and_leave value = 'Kaydet ve Devam Et'/>
+    <zoom_p value = 'Yakınlaştır'/>
+    <zoom_m value = 'Uzaklaştır'/>
+    <reset value = 'Reset' />
+    <full_screen value = 'Büyüt'/>
+
+    <camera value = 'Kamera'/>
+
+    <no_iface value = 'Wifi bağdaştırıcı bulunamadı.'/>
+    <no_usb_wifi value = 'Geçerli bağdaştırıcı bulunamadı. Dahili bağdaştırıcı kullanılacaktır.'/>
+    <success_wifi_adapter value = 'Bağdaştırıcı devreye alındı.'/>
+    <inappropriate_connection value = 'Bağlantı bir insansız araca ait değil.'/>
+    <disconnecting value = 'Bağlantı kesiliyor...'/>
+    <process_fail value = 'İşlem başarısız !!!'/>
+    <connected_before value = ' isimli araca bağlı durumda.'/>
+
+    <js_not_found value = 'Joystick takılı değil.'/>
+    <bridge_fail value = 'İnsansız kara aracına veri gönderilemiyor.'/>
+
+    <gui_opened value ="Uygulama başlatılmıştır."/>
+    <logged_in value ="Giriş yapıldı."/>
+
+    <load value = "Yükle"/>
+
+    <connection_loss_rule value ='Bağlantı kesilirse aracı durdur.'/>
+    <video_flip_rule value ='Kamerayı Otomatik Döndür'/>
+    <operation value ='Operasyon'/>
+    <operation_name value ='Operasyon Adı'/>
+
+    <start value="Başlat"/>
+    <stop value="Durdur"/>
+    <rotate value="Döndür"/>
+    <screenshot value="Fotoğraf Çek"/>
+    <no_operation_name value="Bir operasyon adı girin"/>
+    <picture_gallery value="Fotoğraflar"/>
+    <user value="Kullanıcı"/>
+    <user_2 value="Kullanıcı"/>
+    <admin value="Yönetici"/>
+    <video value="Video"/>
+    <picture value="Fotoğraf"/>
+    <close value="Uygulamayı \nKapat"/>
+    <close_2 value="Çık"/>
+    <close_3 value="Kapat"/>
+    <open_onscreen_keyboard value="Klavye"/>
+    <hard_drive_not_found value="SD kart takılı değil veya dosyalar silinmiş !!"/>
+    <restart value="Yeniden Başla"/>
+    <minimize value="Küçült"/>
+    <screenshot_taken value="Fotoğraf Çekildi"/>
+    <battery_10 value="Batarya az kaldı.\n( %10 )"/>
+    <battery_30 value="Batarya az kaldı.\n( %30 )"/>
+
+
+    <advanced_settings value="Gelişmiş Ayarlar"/>
+    <auto_rotate value="Otomatik döndürme"/>
+    <if_disconnected_return_home value="Bağlantı kesilirse eve dön."/>
+    <if_disconnected_destruct value="Bağlantı kesildikten 10 dk. sonra aracı imha et."/>
+    <if_disconnected_shotdown value="Bağlantı kesilirse kapan."/>
+    <channel value="Kanal"/>
+    <hide_wifi value="Ağı gizle (Araç adını not alınız.)"/>
+    <are_you_sure value="Yaptığınız değişikliklerden emin misiniz ?"/>
+    <yes value="EVET"/>
+    <no value="HAYIR"/>
+    <wifi_issue value="Bağlantı donanımı sorunu."/>
+    <file_not_found value="Dosya bulunamadı."/>
+
+    <lan_tr value="TR"/>
+    <lan_eng value="ENG"/>
+
+    <gear_box value="Vites"/>
+    <engine_start value="Motor Çalıştır"/>
+    <engine_stop value="Motor Durdur"/>
+    <horn value="Korna"/>
+
+    <gauge_box value="Hız km/sa"/>
+    <battary_voltage value="Akü Voltajı"/>
+    <engine_status value="Motor"/>
+
+    <off value="KAPALI"/>
+    <on value="AÇIK"/>
+    <error value="HATA"/>
+
+
+    <activate_engine value="Motor Çalıştır ?"/>
+
+
+    <state_connected value="Bağlanıldı"/>
+    <state_disconnected value="Bağlantı Yok"/>
+
+    <ramp value="Rampa"/>
+    <ramp_open value="Aç"/>
+    <ramp_close value="Kapat"/>
+    <ramp_stop value="Durdur"/>
+
+    <position value="Konum"/>
+    <map value="Harita"/>
+
+    <more value="Daha Fazla"/>
+
+    <imu_set value="Kur"/>
+    <imu_save value="Kayıt"/>
+    <imu_turn value="Dön"/>
+
+    <battery_prefix_ika value="İKA: %"/>
+    <battery_prefix_ukb value="UKB: %"/>
+
+    <battery_prefix_ika_1 value="İ: %"/>
+    <battery_prefix_ukb_1 value="U: %"/>
+
+    <payload_fire value="Ateşle"/>
+
+    <motion_detected value="Hareket algılandı."/>
+
+    <military_coord value="Askeri koordinat sistemi"/>
+    <decimal_coord value="10'luk koordinat sistemi"/>
+
+    <switch_imu_and_map value="Değiştir"/>
+
+    <arm_forward value="İleri"/>
+    <arm_backward value="Geri"/>
+    <arm_stop value="Dur"/>
+
+    <pim_not_inserted value="Lütfen Araç pimini UKB'ye takın."/>
+
+</const>
