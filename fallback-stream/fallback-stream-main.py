@@ -11,6 +11,7 @@ import time
 
 # python3 stream_switcher rtmp://10.128.0.42:1600/live/965199813 rtmp://10.128.0.42:1700/live/965199814 rtmp://a.rtmp.youtube.com/live2/yt2a-r43w-tfpy-f4cx-bquk
 
+# https://git.ao2.it/experiments/gstreamer.git/blob/HEAD:/python/gst-input-selector-switch.py
 
 class StreamSwitcher:
     def __init__(self):
