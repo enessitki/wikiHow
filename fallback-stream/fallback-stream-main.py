@@ -36,6 +36,27 @@ class StreamSwitcher:
         self.last_msg_time_1600 = time.time()
         self.last_msg_time_1700 = time.time()
 
+        self.bus = self.pipe.get_bus()
+        self.bus.add_signal_watch()
+        self.bus.connect('message::eos', self.on_eos)
+        self.bus.connect('message::error', self.on_error)
+        self.bus.connect('message::state-changed', self.on_state_changed)
+
+    def on_eos(self, bus, msg):
+        print("eos...........")
+
+    def on_error(self, bus, msg):
+        (err, debug) = msg.parse_error()
+        print("Error: %s" % err)
+        # self.quit()
+
+    def on_state_changed(self, bus, msg):
+        # if msg.src != self.pipe:
+        #     return
+
+        old_state, new_state, pending = msg.parse_state_changed()
+        print("%s from %s to %s" % (msg.src.get_name(), old_state, new_state))
+
     def switch(self, prev, next):
         if next == "main":
             self.selector.set_property("active-pad", self.mainPad)
