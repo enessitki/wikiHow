@@ -1,6 +1,7 @@
 import gi
 gi.require_version('Gst', '1.0')
-from gi.repository import Gst, GObject
+gi.require_version("GstApp", "1.0")
+from gi.repository import Gst, GObject, GstApp
 gi.require_version('GstVideo', '1.0')
 gi.require_version('GstAudio', '1.0')
 import logging, os
@@ -8,12 +9,12 @@ GObject.threads_init()
 Gst.init(None)
 Gst.init_check(None)
 print(Gst.version_string(), Gst.version())
-Gst.debug_set_active(True)
-Gst.debug_set_default_threshold(4)
-Gst.debug_set_colored(True)
-Gst.debug_set_default_threshold(Gst.DebugLevel.WARNING)
-Gst.debug_print_stack_trace()
-logger = logging.getLogger("gst-gtklaunch-1.0")
+# Gst.debug_set_active(True)
+# Gst.debug_set_default_threshold(4)
+# Gst.debug_set_colored(True)
+# Gst.debug_set_default_threshold(Gst.DebugLevel.WARNING)
+# Gst.debug_print_stack_trace()
+# logger = logging.getLogger("gst-gtklaunch-1.0")
 
 
 try:
@@ -41,8 +42,8 @@ class StreamSwitcher:
 
         # self.video_caps = " video/x-raw, width=1920, height=1080, framerate=60/1, format=I420 "
         # self.video_caps = " video/x-raw, format=(string)I420, width=(int)1920, height=(int)1080, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)mpeg2, colorimetry=(string)bt709, framerate=(fraction)60/1 "
-        self.video_caps = " video/x-raw, format=(string)I420, width=(int)1920, height=(int)1080, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)mpeg2, colorimetry=(string)bt709, framerate=(fraction)60/1 "
-        self.audio_caps = " audio/x-raw, format=F32LE, layout=interleaved, rate=44100, channels=2, channel-mask=(bitmask)0x0000000000000003 "
+        self.video_caps = ' capsfilter name=video_caps caps="video/x-raw, format=(string)I420, width=(int)1920, height=(int)1080, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)mpeg2, colorimetry=(string)bt709, framerate=(fraction)60/1" '
+        self.audio_caps = ' capsfilter name=audio_caps caps="audio/x-raw, format=F32LE, layout=interleaved, rate=44100, channels=2, channel-mask=(bitmask)0x0000000000000003" '
 
         pipe_str_filler = "videotestsrc pattern=snow ! " + self.video_caps + " ! appsink name=video_filler drop=true max-buffers=5 emit-signals=1 "
         pipe_str_filler += "audiotestsrc volume=0.2 ! " + self.audio_caps + " ! appsink name=audio_filler drop=true max-buffers=5 emit-signals=1 "
@@ -52,13 +53,7 @@ class StreamSwitcher:
         pipe_str_main += "demux.audio ! queue ! aacparse ! decodebin ! audioconvert ! " + self.audio_caps + " ! appsink name=audio_main drop=true max-buffers=5 emit-signals=1 "
 
         pipe_str_backup = pipe_str_main.replace(self.src_url_main, self.src_url_backup).replace("video_main", "video_backup").replace("audio_main", "audio_backup")
-        print()
-        print(pipe_str_main)
-        print()
-        print(pipe_str_backup)
-        print()
-        print(pipe_str_filler)
-        print()
+
         self.filler_pipe = Gst.parse_launch(pipe_str_filler)
         self.main_pipe = Gst.parse_launch(pipe_str_main)
         self.backup_pipe = Gst.parse_launch(pipe_str_backup)
@@ -82,7 +77,7 @@ class StreamSwitcher:
         pipe_str_out = "appsrc emit-signals=True is-live=true stream-type=0 name=video_out ! " + self.video_caps + " ! "
         pipe_str_out += " queue ! nvh264enc bitrate=20000 preset=2 rc-mode=3 !  h264parse ! queue ! flvmux name=mux streamable=true ! queue ! rtmpsink sync=true location=" + self.sink_url + " "
         pipe_str_out += "appsrc emit-signals=True is-live=true stream-type=0 name=audio_out ! " + self.audio_caps + " ! audioconvert ! voaacenc perfect-timestamp=true ! aacparse ! queue ! mux. "
-        print(pipe_str_out)
+
         self.out_pipe = Gst.parse_launch(pipe_str_out)
         self.video_out_src = self.out_pipe.get_by_name("video_out")
         self.video_out_src.set_property("format", Gst.Format.TIME)
@@ -90,74 +85,111 @@ class StreamSwitcher:
         self.audio_out_src.set_property("format", Gst.Format.TIME)
         # self.out_src.connect("need-data", self.update_out, self.out_src)
 
+        print()
+        print(pipe_str_main)
+        print()
+        print(pipe_str_backup)
+        print()
+        print(pipe_str_filler)
+        print()
+        print(pipe_str_out)
+        print()
+
+        self.main_last_sample = None
+        self.backup_last_sample = None
+
+        self.main_video_caps = None
+        self.main_audio_caps = None
+        self.filler_video_filter = self.filler_pipe.get_by_name("video_caps")
+        self.filler_audio_filter = self.filler_pipe.get_by_name("audio_caps")
+        self.out_video_filter = self.out_pipe.get_by_name("video_caps")
+        self.out_audio_filter = self.out_pipe.get_by_name("audio_caps")
+
+        self.timeout = 0.1
+
         self.out_pipe.set_state(Gst.State.PLAYING)
         self.filler_pipe.set_state(Gst.State.PLAYING)
         self.main_pipe.set_state(Gst.State.PLAYING)
         self.backup_pipe.set_state(Gst.State.PLAYING)
+        # print(dir(self.video_out_src))
 
     def update_video_filler(self, sink, data):
         sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
-        print()
-        print("filler")
-        print(caps)
-        print()
+
+        if self.main_last_sample is not None and self.backup_last_sample is not None and \
+                time.time() - self.backup_last_sample > self.timeout and time.time() - self.backup_last_sample > self.timeout:
+            self.active_input = 0
+
         if self.active_input == 0:
-            self.video_out_src.emit("push-buffer", buf)
+            buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
+            self.video_out_src.emit("push-buffer", buf2)
         return Gst.FlowReturn.OK
 
     def update_video_main(self, sink, data):
         sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
-        print()
-        print("main")
-        print(caps)
-        print()
+        # if self.main_video_caps is None:
+        #     self.main_video_caps = caps
+        #     self.filler_video_filter.set_caps(caps)
+        #     self.out_video_filter.set_caps(caps)
+
+        self.main_last_sample = time.time()
+
+        if self.backup_last_sample is not None and time.time() - self.backup_last_sample > self.timeout:
+            self.active_input = 1
+
+        if self.active_input == 0:
+            self.active_input = 1
+
         if self.active_input == 1:
-            # if not self.is_caps_set:
-            #     self.is_caps_set = True
-            #     self.video_out_src.set_caps(caps)
-            self.video_out_src.emit("push-buffer", buf)
+            buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
+            self.video_out_src.emit("push-buffer", buf2)
         return Gst.FlowReturn.OK
 
     def update_video_backup(self, sink, data):
         sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
+        self.backup_last_sample = time.time()
+
+        if self.main_last_sample is not None and time.time() - self.main_last_sample > self.timeout:
+            self.active_input = 2
+
+        if self.active_input == 0:
+            self.active_input = 2
+
         if self.active_input == 2:
-            # if not self.is_caps_set:
-            #     self.is_caps_set = True
-            #     self.out_src.set_caps(caps)
-            self.video_out_src.emit("push-buffer", buf)
+            buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
+            self.video_out_src.emit("push-buffer", buf2)
         return Gst.FlowReturn.OK
 
     def update_audio_filler(self, sink, data):
         sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
-        print()
-        print("filler")
-        print(caps)
-        print()
         if self.active_input == 0:
-            self.audio_out_src.emit("push-buffer", buf)
+            buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
+            self.audio_out_src.emit("push-buffer", buf2)
         return Gst.FlowReturn.OK
 
     def update_audio_main(self, sink, data):
         sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
-        print()
-        print("main")
-        print(caps)
-        print()
+        # if self.main_audio_caps is None:
+        #     self.main_audio_caps = caps
+        #     self.filler_audio_filter.set_caps(caps)
+        #     self.out_audio_filter.set_caps(caps)
+
         if self.active_input == 1:
             # if not self.is_caps_set:
             #     self.is_caps_set = True
             #     self.out_src.set_caps(caps)
-            self.audio_out_src.emit("push-buffer", buf)
+            buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
+            self.audio_out_src.emit("push-buffer", buf2)
         return Gst.FlowReturn.OK
 
     def update_audio_backup(self, sink, data):
@@ -168,7 +200,8 @@ class StreamSwitcher:
             # if not self.is_caps_set:
             #     self.is_caps_set = True
             #     self.out_src.set_caps(caps)
-            self.audio_out_src.emit("push-buffer", buf)
+            buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
+            self.audio_out_src.emit("push-buffer", buf2)
         return Gst.FlowReturn.OK
 
     # def update_out(self, source, length):
@@ -196,4 +229,4 @@ while True:
     #     sw.active_input += 1
     # else:
     #     sw.active_input = 0
-    # print(sw.active_input)
+    print(sw.active_input)
