@@ -4,7 +4,10 @@ gi.require_version("GstApp", "1.0")
 from gi.repository import Gst, GObject, GstApp
 gi.require_version('GstVideo', '1.0')
 gi.require_version('GstAudio', '1.0')
-import logging, os
+import logging
+import os
+import sys
+import time
 GObject.threads_init()
 Gst.init(None)
 Gst.init_check(None)
@@ -17,14 +20,13 @@ print(Gst.version_string(), Gst.version())
 # logger = logging.getLogger("gst-gtklaunch-1.0")
 
 
-try:
-    assert os.environ.get("GST_DEBUG_DUMP_DOT_DIR", None)
-except (NameError, AssertionError):
-    os.environ["GST_DEBUG_DUMP_DOT_DIR"] = os.getcwd()
+# try:
+#     assert os.environ.get("GST_DEBUG_DUMP_DOT_DIR", None)
+# except (NameError, AssertionError):
+#     os.environ["GST_DEBUG_DUMP_DOT_DIR"] = os.getcwd()
 
-import sys
-import time
 
+TEST_MODE = False
 # python3 stream-manager-main.py rtmp://10.128.0.42:1600/live/965199813 rtmp://10.128.0.42:1700/live/965199814 rtmp://a.rtmp.youtube.com/live2/yt2a-r43w-tfpy-f4cx-bquk
 
 # https://git.ao2.it/experiments/gstreamer.git/blob/HEAD:/python/gst-input-selector-switch.py
@@ -45,8 +47,8 @@ class StreamSwitcher:
         self.video_caps = ' capsfilter name=video_caps caps="video/x-raw, format=(string)I420, width=(int)1920, height=(int)1080, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)mpeg2, colorimetry=(string)bt709, framerate=(fraction)60/1" '
         self.audio_caps = ' capsfilter name=audio_caps caps="audio/x-raw, format=F32LE, layout=interleaved, rate=44100, channels=2, channel-mask=(bitmask)0x0000000000000003" '
 
-        pipe_str_filler = "videotestsrc pattern=snow ! " + self.video_caps + " ! appsink name=video_filler drop=true max-buffers=5 emit-signals=1 "
-        pipe_str_filler += "audiotestsrc volume=0.2 ! " + self.audio_caps + " ! appsink name=audio_filler drop=true max-buffers=5 emit-signals=1 "
+        pipe_str_filler = "videotestsrc ! " + self.video_caps + " ! appsink name=video_filler drop=true max-buffers=5 emit-signals=1 "
+        pipe_str_filler += "audiotestsrc volume=0 ! " + self.audio_caps + " ! appsink name=audio_filler drop=true max-buffers=5 emit-signals=1 "
 
         pipe_str_main = "rtmpsrc location="+self.src_url_main+"   name=src do-timestamp=true ! flvdemux name=demux "
         pipe_str_main += "demux.video ! queue ! h264parse ! avdec_h264 ! videoconvert ! videorate ! " + self.video_caps + " ! appsink name=video_main drop=true max-buffers=5 emit-signals=1 "
@@ -105,7 +107,7 @@ class StreamSwitcher:
         self.out_video_filter = self.out_pipe.get_by_name("video_caps")
         self.out_audio_filter = self.out_pipe.get_by_name("audio_caps")
 
-        self.timeout = 0.1
+        self.timeout = 0.3
 
         self.out_pipe.set_state(Gst.State.PLAYING)
         self.filler_pipe.set_state(Gst.State.PLAYING)
@@ -113,36 +115,63 @@ class StreamSwitcher:
         self.backup_pipe.set_state(Gst.State.PLAYING)
         # print(dir(self.video_out_src))
 
+    def update_active_input(self):
+        if not TEST_MODE:
+            t0 = time.time()
+            if self.main_last_sample is None or self.backup_last_sample is None:
+                self.active_input = 0
+            else:
+                if self.active_input == 0:
+                    if t0 - self.main_last_sample <= self.timeout:
+                        self.active_input = 1
+                    elif t0 - self.backup_last_sample <= self.timeout:
+                        self.active_input = 2
+
+                elif self.active_input == 1:
+                    if t0 - self.main_last_sample > self.timeout:
+                        if t0 - self.backup_last_sample <= self.timeout:
+                            self.active_input = 2
+                        else:
+                            self.active_input = 0
+
+                elif self.active_input == 2:
+                    if t0 - self.backup_last_sample > self.timeout:
+                        if t0 - self.main_last_sample <= self.timeout:
+                            self.active_input = 1
+                        else:
+                            self.active_input = 0
+
+    def update_caps(self, video_caps, audio_caps):
+        if video_caps is not None:
+            self.out_video_filter.set_property("caps", video_caps)
+            self.filler_video_filter.set_property("caps", video_caps)
+
+        if audio_caps is not None:
+            self.out_audio_filter.set_property("caps", audio_caps)
+            self.filler_audio_filter.set_property("caps", audio_caps)
+
     def update_video_filler(self, sink, data):
         sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
-
-        if self.main_last_sample is not None and self.backup_last_sample is not None and \
-                time.time() - self.backup_last_sample > self.timeout and time.time() - self.backup_last_sample > self.timeout:
-            self.active_input = 0
+        self.update_active_input()
 
         if self.active_input == 0:
             buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
             self.video_out_src.emit("push-buffer", buf2)
+
         return Gst.FlowReturn.OK
 
     def update_video_main(self, sink, data):
         sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
-        # if self.main_video_caps is None:
-        #     self.main_video_caps = caps
-        #     self.filler_video_filter.set_caps(caps)
-        #     self.out_video_filter.set_caps(caps)
-
         self.main_last_sample = time.time()
+        self.update_active_input()
 
-        if self.backup_last_sample is not None and time.time() - self.backup_last_sample > self.timeout:
-            self.active_input = 1
-
-        if self.active_input == 0:
-            self.active_input = 1
+        if not self.video_caps == caps:
+            self.video_caps = caps
+            self.update_caps(video_caps=caps, audio_caps=None)
 
         if self.active_input == 1:
             buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
@@ -154,12 +183,7 @@ class StreamSwitcher:
         buf = sample.get_buffer()
         caps = sample.get_caps()
         self.backup_last_sample = time.time()
-
-        if self.main_last_sample is not None and time.time() - self.main_last_sample > self.timeout:
-            self.active_input = 2
-
-        if self.active_input == 0:
-            self.active_input = 2
+        self.update_active_input()
 
         if self.active_input == 2:
             buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
@@ -179,15 +203,12 @@ class StreamSwitcher:
         sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
-        # if self.main_audio_caps is None:
-        #     self.main_audio_caps = caps
-        #     self.filler_audio_filter.set_caps(caps)
-        #     self.out_audio_filter.set_caps(caps)
+
+        if not self.audio_caps == caps:
+            self.audio_caps = caps
+            self.update_caps(video_caps=None, audio_caps=caps)
 
         if self.active_input == 1:
-            # if not self.is_caps_set:
-            #     self.is_caps_set = True
-            #     self.out_src.set_caps(caps)
             buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
             self.audio_out_src.emit("push-buffer", buf2)
         return Gst.FlowReturn.OK
@@ -197,36 +218,19 @@ class StreamSwitcher:
         buf = sample.get_buffer()
         caps = sample.get_caps()
         if self.active_input == 2:
-            # if not self.is_caps_set:
-            #     self.is_caps_set = True
-            #     self.out_src.set_caps(caps)
             buf2 = Gst.Buffer.new_wrapped(buf.extract_dup(0, buf.get_size()))
             self.audio_out_src.emit("push-buffer", buf2)
         return Gst.FlowReturn.OK
 
-    # def update_out(self, source, length):
-    #     # Attempt to read data from the stream
-    #     try:
-    #         data = self.fd.read(length)
-    #     except IOError as err:
-    #         self.exit("Failed to read data from stream: {0}".format(err))
-    #
-    #     # If data is empty it's the end of stream
-    #     if not data:
-    #         source.emit("end-of-stream")
-    #         return
-
-        # Convert the Python bytes into a GStreamer Buffer
-        # and then push it to the appsrc
-        # buf = Gst.Buffer.new_wrapped(data)
-        # source.emit("push-buffer", buf)
-
 
 sw = StreamSwitcher()
+
+
 while True:
     time.sleep(1)
-    # if sw.active_input < 2:
-    #     sw.active_input += 1
-    # else:
-    #     sw.active_input = 0
+    if TEST_MODE:
+        if sw.active_input < 2:
+            sw.active_input += 1
+        else:
+            sw.active_input = 0
     print(sw.active_input)
