@@ -18,7 +18,7 @@ KP = 5.0  # attractive potential gain
 ETA = 100.0  # repulsive potential gain
 AREA_WIDTH = 30.0  # potential area width [m]
 # the number of previous positions used to check oscillations
-OSCILLATIONS_DETECTION_LENGTH = 3
+OSCILLATIONS_DETECTION_LENGTH = 3q
 
 show_animation = True
 
