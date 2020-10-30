@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import pyrealsense2 as rs
 import threading
+# https://dev.intelrealsense.com/docs/post-processing-filters
 
 
 def in_a_thread(fn):
@@ -10,6 +11,12 @@ def in_a_thread(fn):
         thread.daemon = True
         thread.start()
     return for_instance
+
+
+dec_filter = rs.decimation_filter()   # Decimation - reduces depth frame density
+spat_filter = rs.spatial_filter()          # Spatial    - edge-preserving spatial smoothing
+temp_filter = rs.temporal_filter(0.4, 20, 7)    # Temporal   - reduces temporal noise
+hole_filter = rs.hole_filling_filter()
 
 
 class Camera:
@@ -70,10 +77,17 @@ class Camera:
             aligned_depth_frame = aligned_frames.get_depth_frame()  # aligned_depth_frame is a 640x480 depth image
             color_frame = aligned_frames.get_color_frame()
 
+            # filters
+            # filtered = dec_filter.process(aligned_depth_frame)
+            # filtered = spat_filter.process(filtered)
+            filtered = temp_filter.process(aligned_depth_frame)
+            # filtered = hole_filter.process(filtered)
+            # filtered = spat_filter.process(filtered)
+
             # Validate that both frames are valid
             if aligned_depth_frame and color_frame:
 
-                depth_image = np.asanyarray(aligned_depth_frame.get_data())
+                depth_image = np.asanyarray(filtered.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
 
                 # Remove background - Set pixels further than clipping_distance to grey
