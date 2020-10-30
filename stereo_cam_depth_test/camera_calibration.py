@@ -1,70 +1,92 @@
 import numpy as np
 import cv2
 import glob
-from matplotlib import pyplot as plt
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+import yaml
 
-video = cv2.VideoCapture(0)
-# 2. Variable
-a = 0
-objp = np.zeros((9*7, 3), np.float32)
-objp[:, :2] = np.mgrid[0:9, 0:7].T.reshape(-1, 2)
+cap = cv2.VideoCapture(0)
+ret, frame = cap.read()
+if ret:
+    h, w, d = frame.shape
+    w = int(w / 2)
+    frame_left = frame[:, 0:w, :]
+    frame_right = frame[:, w:, :]
+    cv2.imshow("left", frame_left)
+    cv2.imshow("right", frame_right)
 
-objpoints_left = [] # 3d point in real world space
-objpoints_right = [] # 3d point in real world space
-imgpoints_left = [] # 2d points in image plane.
-imgpoints_right = [] # 2d points in image plane.
+    frame_left_gray = cv2.cvtColor(frame_left, cv2.COLOR_RGB2GRAY)
+    frame_right_gray = cv2.cvtColor(frame_right, cv2.COLOR_RGB2GRAY)
 
-# 3. While loop
-while True:
-    a = a + 1
-    # 4.Create a frame object
+    cv2.imwrite('outputLeft.png', frame_left_gray)
+    cv2.imwrite('outputRight.png', frame_right_gray)
 
-    ret, frame = video.read()
+while(True):
+    if cv2.waitKey(1) & 0xFF == ord('c'):
+        # termination criteria
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-    if ret:
-        h, w, d = frame.shape
-        w = int(w / 2)
-        frame_right = frame[:, w:, :]
-        frame_left = frame[:, 0:w, :]
+        # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+        objp = np.zeros((9*7, 3), np.float32)
+        objp[:, :2] = np.mgrid[0:7, 0:9].T.reshape(-1, 2)
 
-        gray = cv2.cvtColor(frame_left, cv2.COLOR_BGR2GRAY)
-        ret2, corners = cv2.findChessboardCorners(gray, (9, 7), None)
+        # Arrays to store object points and image points from all the images.
+        objpoints = [] # 3d point in real world space
+        imgpoints = [] # 2d points in image plane.
+        objpoints1 = []
+        objpoints2 = []
+        imgpoints1 = []
+        imgpoints2 = []
 
-        # Converting to grayscale
-        #gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-        # 5.show the frame!
-        # cv2.imshow("Capturing", frame)
-        print("here2", ret2)
+        img = cv2.imread('output3.png')
+        img1 = cv2.imread('outputLeft.png')
+        img2 = cv2.imread('outputRight.png')
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
-        if ret2:
-            objpoints_left.append(objp)
-            corners2 = cv2.cornerSubPix(gray, corners, (22, 22), (-1, -1), criteria)
-            imgpoints_left.append(corners2)
-            frame_left = cv2.drawChessboardCorners(frame_left, (9, 7), corners2, ret)
-            print("here")
-            ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints_left, imgpoints_left, gray.shape[::-1], None, None)
-            print(mtx)
-            newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-            # dst = cv2.undistort(frame_left, mtx, dist, None, newcameramtx)
-            #
-            # x, y, w, h = roi
-            # dst = dst[y:y + h, x:x + w]
-            # cv2.imshow(dst)
+        # Find the chess board corners
+        ret, corners = cv2.findChessboardCorners(gray, (7, 9), None)
+        ret1, corners11 = cv2.findChessboardCorners(gray1, (7, 9), None)
+        ret2, corners22 = cv2.findChessboardCorners(gray2, (7, 9), None)
+        # If found, add object points, image points (after refining them)
+        if ret == True:
+            objpoints.append(objp)
+            objpoints1.append(objp)
+            objpoints2.append(objp)
 
+            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+            imgpoints.append(corners2)
+            cornersS11 = cv2.cornerSubPix(gray1, corners11, (11, 11), (-1, -1), criteria)
+            imgpoints.append(corners11)
+            cornersS22 = cv2.cornerSubPix(gray2, corners22, (11, 11), (-1, -1), criteria)
+            imgpoints.append(corners22)
 
-        # cv2.imshow("left", dst)
+            # Draw and display the corners
+            img = cv2.drawChessboardCorners(img, (7, 9), corners2, ret)
+            # cv2.imshow('img',img)
+            cv2.waitKey(500)
 
-        # cv2.imshow("right", frame_right)
-    # 6.for playing
-        key = cv2.waitKey(1)
-        if key == ord('q'):
-            break
-# 7. image saving
-# showPic = cv2.imwrite("opencv.jpg", frame)
-# print(showPic)
-# 8. shutdown the camera
-# video.release()
-cv2.destroyAllWindows
-# stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15)
+        cv2.destroyAllWindows()
+        retS, mtxS1, distS1, mtxs2, distS2, rvecS2, tvecs2 = cv2.stereoCalibrate(objpoints1, objpoints2, imgpoints, imgpoints, gray1.shape[::-1], gray2.shape[::-1], None, None)
+        ret2, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+
+        print("mtx : ", mtx)
+
+        print(mtxS1, "--", mtxs2)
+        print(distS1, "--", distS2)
+        print(rvecS2, "--", tvecs2)
+
+        h, w = img.shape[:2]
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+
+        mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w, h), 5)
+        dst = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)
+
+        # crop the image
+        x, y, w, h = roi
+        dst = dst[y:y + h, x:x + w]
+        cv2.imwrite('result3.png', dst)
+
+    # if cv2.waitKey(1) & 0xFF == ord('q'):
+    #     break
+    #
 
