@@ -1,4 +1,5 @@
-Depth Control:
+Found device that supports advanced mode: Intel RealSense D435
+Advanced mode is enabledDepth Control:
  minusDecrement: 10, deepSeaMedianThreshold: 500, scoreThreshA: 1, scoreThreshB: 2047, textureDifferenceThreshold: 0, textureCountThreshold: 0, deepSeaSecondPeakThreshold: 325, deepSeaNeighborThreshold: 7, lrAgreeThreshold: 24
 RSM:
  rsmBypass: 0, diffThresh: 4, sloRauDiffThresh: 1, removeThresh: 63
