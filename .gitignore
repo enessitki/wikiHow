@@ -7,3 +7,5 @@
 /gstreamer-boilerplate-cpp-master/.idea/
 /timepicker/.idea/
 /uv-robot-ukb-android/.idea/
+*.idea
+*.idea*
