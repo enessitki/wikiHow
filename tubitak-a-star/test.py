@@ -8,9 +8,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget
-# import geopy
-# import geopy.distance
+import geopy
 from pyqtlet import L, MapWidget
+from geopy.distance import geodesic as dist
 from geographiclib.geodesic import Geodesic
 
 
@@ -36,6 +36,11 @@ class Window(QWidget):
         self.vehicleMarker = None
         self.testVehiclepoint = ([0, 0])
         self.testVehicleMarker = None
+        self.nextPointList = None
+        self.openSet = None  # point, gScore, fScore
+        self.comeFrom = dict()  # self.comeFrom["komşu"] = current
+        self.stepSize = 1.0 # meter
+        self.currentPoint = None
 
 
         # self.gnssSerialDevice = serial.Serial(
@@ -136,6 +141,11 @@ class Window(QWidget):
             self.startMarker = L.circleMarker(self.startPoint, {"color": "#3FF00F", "radius": 5})
             self.startMarker.bindPopup('START')
             self.map.addLayer(self.startMarker)
+            self.startPoint.clear()
+            self.startPoint = (float(point[0]), float(point[1]))
+            print(self.startPoint)
+            self.openSet.clear()
+            self.openSet.append((self.startPoint, 0,self.calc_fScore(self.startPoint)))
 
         elif self.isStartButtonClicked is False and self.isGoalButtonClicked is True and self.isObstacleButtonClicked is False:
             self.goalPoint = [float(point[0]), float(point[1])]
@@ -146,6 +156,9 @@ class Window(QWidget):
             self.goalMarker = L.circleMarker(self.goalPoint, {"color": '#F0370F', "radius": 5})
             self.goalMarker.bindPopup('GOAL')
             self.map.addLayer(self.goalMarker)
+            self.goalPoint.clear()
+            self.goalPoint = (float(point[0]), float(point[1]))
+            print(self.goalPoint)
 
         elif self.isStartButtonClicked is False and self.isGoalButtonClicked is False and self.isObstacleButtonClicked is True:
             self.obstaclePoint = [float(point[0]), float(point[1])]
@@ -176,7 +189,6 @@ class Window(QWidget):
     #                 print(error)
 
     def draw_path(self):
-        pass
     #     if self.startPoint is not None and self.goalPoint is not None:
     #         if self.testVehiclepoint == ([0, 0]):
     #             self.testVehiclepoint = self.startPoint
@@ -192,9 +204,81 @@ class Window(QWidget):
     #         self.testVehicleMarker = L.circle(self.testVehiclepoint, {"color": "#0FF0E6", "radius": 5})
     #         self.startMarker.bindPopup('Vehicle')
     #         self.map.addLayer(self.testVehicleMarker)
-
-    def calc_heuristical_cost(self):
         pass
+
+    def planner(self):
+        if self.startPoint is not None and self.goalPoint is not None:
+            while len(self.openSet) == 0:
+                self.assign_min_fScore_point_to_currentPoint_in_openSet_and_remove_openSet()
+                self.calc_next_point(self.currentPoint, 6, 1)
+                for neighbor in self.nextPointList:
+                    if self.is_fScore_lower_than_step(neighbor):
+                        self.plan_path(self.currentPoint)  # !!!!!!!!!!!!!!!!!- DONE -!!!!!!!!!!!!!!!!!
+
+                    elif self.is_point_in_obstacle_radius(neighbor):
+                        continue
+                    else:
+                        pass
+                        #eğer neighbor openset içinde yoksa
+                            #neighbor için gScore ve fScore hesapla openset içine yaz
+                            #neighbor için nereden geldiğini kaydet
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def calc_fScore(self, point1):
+        # cleveland_oh = (41.499498, -81.695391)
+        return dist(point1, self.goalPoint).m
+
+    def calc_gScore(self,point1, point2):
+        return dist(point1, point2).m
+
+    def calc_tentative_gScore(self, point1):
+        tentativeGScore = self.currentPoint[1] + self.calc_gScore(self.currentPoint[0], point1)
+        return tentativeGScore
+
+    def calc_next_point(self, point1, pointNumber, distance):
+        self.nextPointList.clear()
+        angle = 360 / pointNumber
+        for i in range(pointNumber):
+            point = dist.destination(point1[0], i*angle, distance/1000)
+            self.nextPointList.append((point, 0))
+
+    def is_fScore_lower_than_step(self, point1):
+        if (self.calc_fScore()) > self.stepSize:
+            return False
+        else:
+            return True
+    def is_point_in_obstacle_radius(self,point1):
+        pass
+
+    def plan_path(self,point):
+        pass
+    def assign_min_fScore_point_to_currentPoint_in_openSet_and_remove_openSet(self):
+        current = self.openSet[0]
+        for i in range(self.openSet):
+            if self.openSet[i][2] < current[2]:
+                current = self.openSet[i]
+                self.openSet.pop(i)
+        self.currentPoint = current
+
+
+
+
+
+
+
 
 
 
