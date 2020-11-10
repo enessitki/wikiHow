@@ -1,0 +1,11 @@
+<launch>
+<!--    <node pkg="beginner_tutorials" type="printer.py" name="printer_node"-->
+<!--    output="screen">-->
+<!--    </node>-->
+    <node pkg="beginner_tutorials" type="publisher.py" name="topic_publisher"
+    output="screen">
+    </node>
+    <node pkg="beginner_tutorials" type="subscriber.py" name="topic_subscriber"
+    output="screen">
+    </node>
+</launch>

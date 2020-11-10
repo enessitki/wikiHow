@@ -1,0 +1,23 @@
+<sdf version="1.5">
+  <world name="default">
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+<!--    <include>-->
+<!--      <uri>model:///home/esetron/catkin_ws/src/beginner_tutorials/worlds/box</uri>-->
+<!--    </include>-->
+<!--    <include>-->
+<!--      <uri>model:///home/esetron/catkin_ws/src/beginner_tutorials/worlds/wheel</uri>-->
+<!--    </include>-->
+
+    <include>
+      <uri>model:///home/esetron/catkin_ws/src/beginner_tutorials/worlds/vehicle</uri>
+    </include>
+
+
+  </world>
+</sdf>

@@ -1,0 +1,303 @@
+<?xml version='1.0'?>
+<sdf version="1.4">
+  <model name="vehicle">
+    <pose>0 0 0.03 0 0 0</pose>
+
+    <link name="base">
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>1.0</mass>
+        <inertia> <!-- inertias are tricky to compute -->
+          <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+          <ixx>0.083</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+          <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+          <ixz>0.0</ixz>         <!-- for a box: ixz = 0 -->
+          <iyy>0.083</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+          <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+          <izz>0.083</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+        </inertia>
+      </inertial>
+      <collision name="base_collision">
+        <geometry>
+          <box>
+            <size>0.2 0.1 0.05</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="base_visual">
+        <geometry>
+          <box>
+            <size>0.2 0.1 0.05</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="wheel_front_left">
+      <pose>0.07 0.065 0 1.57079632679 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.001087473</ixx>
+          <iyy>0.001087473</iyy>
+          <izz>0.001092437</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="wheel_front_left_collision">
+        <geometry>
+          <cylinder>
+            <!-- Radius and length provided by Velodyne -->
+            <radius>.03</radius>
+            <length>.02</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <!-- The visual is mostly a copy of the collision -->
+      <visual name="wheel_front_left_visual">
+        <geometry>
+          <cylinder>
+            <radius>.03</radius>
+            <length>.02</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint type="revolute" name="wheel_front_left_joint">
+
+      <!-- Position the joint at the bottom of the top link -->
+      <pose>0 0 0 0 0 0</pose>
+
+      <!-- Use the base link as the parent of the joint -->
+      <parent>base</parent>
+
+      <!-- Use the top link as the child of the joint -->
+      <child>wheel_front_left</child>
+
+      <!-- The axis defines the joint's degree of freedom -->
+      <axis>
+
+        <!-- Revolve around the z-axis -->
+        <xyz>0 1 0</xyz>
+
+        <!-- Limit refers to the range of motion of the joint -->
+        <limit>
+
+          <!-- Use a very large number to indicate a continuous revolution -->
+          <lower>-10000000000000000</lower>
+          <upper>10000000000000000</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <link name="wheel_front_right">
+      <pose>0.07 -0.065 0 1.57079632679 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.001087473</ixx>
+          <iyy>0.001087473</iyy>
+          <izz>0.001092437</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="wheel_front_right_collision">
+        <geometry>
+          <cylinder>
+            <!-- Radius and length provided by Velodyne -->
+            <radius>.03</radius>
+            <length>.02</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <!-- The visual is mostly a copy of the collision -->
+      <visual name="wheel_front_right_visual">
+        <geometry>
+          <cylinder>
+            <radius>.03</radius>
+            <length>.02</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint type="revolute" name="wheel_front_right_joint">
+
+      <!-- Position the joint at the bottom of the top link -->
+      <pose>0 0 0 0 0 0</pose>
+
+      <!-- Use the base link as the parent of the joint -->
+      <parent>base</parent>
+
+      <!-- Use the top link as the child of the joint -->
+      <child>wheel_front_right</child>
+
+      <!-- The axis defines the joint's degree of freedom -->
+      <axis>
+
+        <!-- Revolve around the z-axis -->
+        <xyz>0 1 0</xyz>
+
+        <!-- Limit refers to the range of motion of the joint -->
+        <limit>
+
+          <!-- Use a very large number to indicate a continuous revolution -->
+          <lower>-10000000000000000</lower>
+          <upper>10000000000000000</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <link name="wheel_back_left">
+      <pose>-0.07 0.065 0 1.57079632679 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.001087473</ixx>
+          <iyy>0.001087473</iyy>
+          <izz>0.001092437</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="wheel_back_left_collision">
+        <geometry>
+          <cylinder>
+            <!-- Radius and length provided by Velodyne -->
+            <radius>.03</radius>
+            <length>.02</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <!-- The visual is mostly a copy of the collision -->
+      <visual name="wheel_back_left_visual">
+        <geometry>
+          <cylinder>
+            <radius>.03</radius>
+            <length>.02</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint type="revolute" name="wheel_back_left_joint">
+
+      <!-- Position the joint at the bottom of the top link -->
+      <pose>0 0 0 0 0 0</pose>
+
+      <!-- Use the base link as the parent of the joint -->
+      <parent>base</parent>
+
+      <!-- Use the top link as the child of the joint -->
+      <child>wheel_back_left</child>
+
+      <!-- The axis defines the joint's degree of freedom -->
+      <axis>
+
+        <!-- Revolve around the z-axis -->
+        <xyz>0 1 0</xyz>
+
+        <!-- Limit refers to the range of motion of the joint -->
+        <limit>
+
+          <!-- Use a very large number to indicate a continuous revolution -->
+          <lower>-10000000000000000</lower>
+          <upper>10000000000000000</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <link name="wheel_back_right">
+      <pose>-0.07 -0.065 0 1.57079632679 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.001087473</ixx>
+          <iyy>0.001087473</iyy>
+          <izz>0.001092437</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="wheel_back_right_collision">
+        <geometry>
+          <cylinder>
+            <!-- Radius and length provided by Velodyne -->
+            <radius>.03</radius>
+            <length>.02</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <!-- The visual is mostly a copy of the collision -->
+      <visual name="wheel_back_right_visual">
+        <geometry>
+          <cylinder>
+            <radius>.03</radius>
+            <length>.02</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint type="revolute" name="wheel_back_right_joint">
+
+      <!-- Position the joint at the bottom of the top link -->
+      <pose>0 0 0 0 0 0</pose>
+
+      <!-- Use the base link as the parent of the joint -->
+      <parent>base</parent>
+
+      <!-- Use the top link as the child of the joint -->
+      <child>wheel_back_right</child>
+
+      <!-- The axis defines the joint's degree of freedom -->
+      <axis>
+
+        <!-- Revolve around the z-axis -->
+        <xyz>0 1 0</xyz>
+
+        <!-- Limit refers to the range of motion of the joint -->
+        <limit>
+
+          <!-- Use a very large number to indicate a continuous revolution -->
+          <lower>-10000000000000000</lower>
+          <upper>10000000000000000</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <plugin name="differential_drive_controller"     filename="libgazebo_ros_diff_drive.so">
+      <alwaysOn>false</alwaysOn>
+      <updateRate>20</updateRate>
+      <leftJoint>wheel_front_left_joint</leftJoint>
+      <rightJoint>wheel_front_right_joint</rightJoint>
+
+      <wheelSeparation>0.13</wheelSeparation>
+      <wheelDiameter>0.06</wheelDiameter>
+
+      <torque>20</torque>
+      <commandTopic>cmd_vel</commandTopic>
+
+      <!-- topic name published in the cpp file -->
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <robotBaseFrame>base</robotBaseFrame>
+
+      <publishWheelTF>true</publishWheelTF>
+      <publishWheelJointState>true</publishWheelJointState>
+
+    </plugin>
+
+  </model>
+</sdf>
