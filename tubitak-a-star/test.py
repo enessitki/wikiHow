@@ -1,17 +1,18 @@
 import math
 import numpy as np
 import sys
-
+import time
 # import pynmea2
 # import serial
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget
-import geopy
 from pyqtlet import L, MapWidget
-from geopy.distance import geodesic as dist
+import geopy
+from geopy.distance import geodesic
 from geographiclib.geodesic import Geodesic
+from shapely.geometry import Point, Polygon
 
 
 
@@ -30,17 +31,22 @@ class Window(QWidget):
         self.goalPoint = None
         self.startPoint = None
         self.obstaclePoint = None
+        self.obstacleList = []
+        self.obstacleRadius = 3  # Meter
         self.vehicleLastKnownLocation = [None, None]
         self.startMarker = None
         self.goalMarker = None
         self.vehicleMarker = None
         self.testVehiclepoint = ([0, 0])
         self.testVehicleMarker = None
-        self.nextPointList = None
-        self.openSet = None # (point, gScore, fScore)
-        self.comeFrom = dict()  # self.comeFrom["komşu"] = current
-        self.stepSize = 1.0 # meter
+        self.nextPointList = []
+        self.openSet = []  # (point, gScore, fScore)
+        self.comeFrom = []  # self.comeFrom["komşu"] = current
+        self.stepSize = 1.0  # meter
         self.currentPoint = None
+
+        self.geodesic = geodesic()
+
 
 
         # self.gnssSerialDevice = serial.Serial(
@@ -88,7 +94,7 @@ class Window(QWidget):
         btn_obstacle = QPushButton("Obstacle")
         btn_start.clicked.connect(self.start_btn_clicked)
         btn_goal.clicked.connect(self.goal_btn_clicked)
-        btn_step.clicked.connect(self.draw_path)
+        btn_step.clicked.connect(self.planner)
         btn_obstacle.clicked.connect(self.obstacle_btn_clicked)
 
         layout.addLayout(info_layout)
@@ -144,8 +150,7 @@ class Window(QWidget):
             self.startPoint.clear()
             self.startPoint = (float(point[0]), float(point[1]))
             print(self.startPoint)
-            self.openSet.clear()
-            self.openSet.apend([self.startPoint, 0, self.calc_fScore(self.startPoint)])
+
 
         elif self.isStartButtonClicked is False and self.isGoalButtonClicked is True and self.isObstacleButtonClicked is False:
             self.goalPoint = [float(point[0]), float(point[1])]
@@ -162,9 +167,13 @@ class Window(QWidget):
 
         elif self.isStartButtonClicked is False and self.isGoalButtonClicked is False and self.isObstacleButtonClicked is True:
             self.obstaclePoint = [float(point[0]), float(point[1])]
-            self.obstacle_marker = L.circleMarker(self.obstaclePoint, {"color": "#FF0000", "radius": 20})
+            self.obstacle_marker = L.circleMarker(self.obstaclePoint, {"color": '#F0370F', "radius": 1})
             self.obstacle_marker.bindPopup('Obstacle')
             self.map.addLayer(self.obstacle_marker)
+            self.obstaclePoint.clear()
+            self.obstaclePoint = (float(point[0]), float(point[1]))
+            self.obstacleList.append(self.obstaclePoint)
+
 
 
     # def read_gps_data(self):
@@ -207,31 +216,26 @@ class Window(QWidget):
         pass
 
     def planner(self):
+        self.openSet.clear()
+        self.openSet.append((self.startPoint, 0, self.calc_fScore(self.startPoint)))
         if self.startPoint is not None and self.goalPoint is not None:
             while len(self.openSet) != 0:
                 self.assign_min_fScore_point_to_currentPoint_in_openSet_and_remove_openSet()
-                self.calc_next_point(self.currentPoint, 6, 1)
+                self.calc_next_point(self.currentPoint[0], 4)
                 for neighbor in self.nextPointList:
                     if self.is_fScore_lower_than_step(neighbor):
+                        break
                         self.plan_path(self.currentPoint)  # !!!!!!!!!!!!!!!!!- DONE -!!!!!!!!!!!!!!!!!
 
                     elif self.is_point_in_obstacle_radius(neighbor):
                         continue
+
                     else:
-                        pass
-                        #eğer neighbor openset içinde yoksa
-                            #neighbor için gScore ve fScore hesapla openset içine yaz
-                            #neighbor için nereden geldiğini kaydet
-
-
-
-
-
-
-
-
-
-
+                        if not self.is_openSet_include_point(neighbor):
+                            gScoreForNeighbor = self.currentPoint[1]+self.calc_gScore(neighbor, self.currentPoint[0])
+                            fScoreForNeighbor = self.calc_fScore(neighbor)
+                            self.openSet.append([neighbor, gScoreForNeighbor, fScoreForNeighbor])
+                            self.comeFrom.append((neighbor, self.currentPoint[0]))
 
 
 
@@ -239,39 +243,80 @@ class Window(QWidget):
 
     def calc_fScore(self, point1):
         # cleveland_oh = (41.499498, -81.695391)
-        return dist(point1, self.goalPoint).m
+        return self.geodesic.measure(point1, self.goalPoint)*1000
 
-    def calc_gScore(self,point1, point2):
-        return dist(point1, point2).m
+    def calc_gScore(self, point1, point2):
+        return self.geodesic.measure(point1, point2)*1000
 
     def calc_tentative_gScore(self, point1):
         tentativeGScore = self.currentPoint[1] + self.calc_gScore(self.currentPoint[0], point1)
         return tentativeGScore
 
-    def calc_next_point(self, point1, pointNumber, distance):
+    def is_openSet_include_point(self, point1):
+        result = False
+        for i in range(len(self.openSet)):
+            if self.openSet[i][0] == point1[0]:
+                result = True
+        return result
+
+    def calc_next_point(self, point1, pointNumber):
         self.nextPointList.clear()
+        d = geopy.distance.geodesic(kilometers=self.stepSize / 1000)
+        point = geopy.Point(point1[0], point1[1])
         angle = 360 / pointNumber
         for i in range(pointNumber):
-            point = dist.destination(point1[0], i*angle, distance/1000)
-            self.nextPointList.append((point, 0))
+            newCoordinate = d.destination(point=point, bearing=angle*i).format_decimal()
+            newCoordinate=newCoordinate.split(",")
+            a = float(newCoordinate[0])
+            b = float(newCoordinate[1])
+            self.nextPointList.append((a, b))
 
     def is_fScore_lower_than_step(self, point1):
-        if (self.calc_fScore()) > self.stepSize:
+        fScore = self.calc_fScore(point1)
+        if fScore > self.stepSize:
             return False
         else:
             return True
-    def is_point_in_obstacle_radius(self,point1):
-        pass
+    def is_point_in_obstacle_radius(self, point1):
+        result = False
+        pointNumber = 12
+        coords = []
+        coords.clear()
+        if len(self.obstacleList) > 0:
+            for i in range(len(self.obstacleList)):
+                p1 = Point(point1[0], point1[1])
+                d = geopy.distance.geodesic(kilometers=self.obstacleRadius / 1000)
+                obstaclePoint = geopy.Point(self.obstacleList[i][0], self.obstacleList[i][1])
+                angle = 360 / pointNumber
+                for i in range(pointNumber):
+                    newCoordinate = d.destination(point=obstaclePoint, bearing=angle*i).format_decimal()
+                    newCoordinate = newCoordinate.split(",")
+                    a = float(newCoordinate[0])
+                    b = float(newCoordinate[1])
+                    coords.append((a, b))
+                poly = Polygon(coords)
+                result = p1.within(poly)
+                if result:
+                    return result
+        return result
 
-    def plan_path(self,point):
-        pass
+
+
+
+
+    def plan_path(self, point):
+        return 0
     def assign_min_fScore_point_to_currentPoint_in_openSet_and_remove_openSet(self):
         current = self.openSet[0]
-        for i in range(self.openSet):
+        currentIndex = 0
+        for i in range(len(self.openSet)):
             if self.openSet[i][2] < current[2]:
-                current = self.openSet[i]
-                self.openSet.pop(i)
-        self.currentPoint = current
+                currentIndex = i
+        self.currentPoint = self.openSet[currentIndex]
+        print(self.currentPoint)
+        self.openSet.pop(currentIndex)
+
+
 
 
 
