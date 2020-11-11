@@ -37,7 +37,7 @@ class Window(QWidget):
         self.testVehiclepoint = ([0, 0])
         self.testVehicleMarker = None
         self.nextPointList = None
-        self.openSet = None  # point, gScore, fScore
+        self.openSet = None # (point, gScore, fScore)
         self.comeFrom = dict()  # self.comeFrom["komşu"] = current
         self.stepSize = 1.0 # meter
         self.currentPoint = None
@@ -145,7 +145,7 @@ class Window(QWidget):
             self.startPoint = (float(point[0]), float(point[1]))
             print(self.startPoint)
             self.openSet.clear()
-            self.openSet.append((self.startPoint, 0,self.calc_fScore(self.startPoint)))
+            self.openSet.apend([self.startPoint, 0, self.calc_fScore(self.startPoint)])
 
         elif self.isStartButtonClicked is False and self.isGoalButtonClicked is True and self.isObstacleButtonClicked is False:
             self.goalPoint = [float(point[0]), float(point[1])]
@@ -208,7 +208,7 @@ class Window(QWidget):
 
     def planner(self):
         if self.startPoint is not None and self.goalPoint is not None:
-            while len(self.openSet) == 0:
+            while len(self.openSet) != 0:
                 self.assign_min_fScore_point_to_currentPoint_in_openSet_and_remove_openSet()
                 self.calc_next_point(self.currentPoint, 6, 1)
                 for neighbor in self.nextPointList:
