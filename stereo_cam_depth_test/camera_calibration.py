@@ -3,7 +3,7 @@ import cv2
 import glob
 import yaml
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(4)
 ret, frame = cap.read()
 if ret:
     h, w, d = frame.shape
