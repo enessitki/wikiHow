@@ -42,6 +42,8 @@ class Window(QWidget):
         self.comeFrom = []  # self.comeFrom["komşu"] = current
         self.stepSize = 10.0  # meter
         self.currentPoint = None
+        self.indexForRemoveFromOpenSet = None
+        self.cicle = 0
 
         self.geodesic = geodesic()
 
@@ -214,10 +216,12 @@ class Window(QWidget):
         pass
 
     def planner(self):
+        self.cicle += 1
         if self.startPoint is not None and self.goalPoint is not None:
             if len(self.openSet) != 0:
                 self.assign_min_fScore_point_to_currentPoint_in_openSet_and_remove_openSet()
                 self.calc_next_point(self.currentPoint[0])
+                self.openSet.pop(self.indexForRemoveFromOpenSet)
                 for neighbor in self.nextPointList:
                     if self.is_distance_lower_than_step(neighbor):
                         break
@@ -228,20 +232,26 @@ class Window(QWidget):
 
                     else:
                         if not self.is_openSet_include_point(neighbor):
-                            gScoreForNeighbor = self.currentPoint[1] + self.calc_gScore()
+
+                            gScoreForNeighbor = self.currentPoint[1] + self.calc_gScore(self.currentPoint[0], neighbor)
                             fScoreForNeighbor = self.calc_fScore(neighbor, gScoreForNeighbor)
                             self.openSet.append([neighbor, gScoreForNeighbor, fScoreForNeighbor])
                             self.comeFrom.append((neighbor, self.currentPoint[0]))
+
+        print("################################################")
         print(len(self.openSet))
-        print(self.openSet)
+        for i in range(len(self.openSet)):
+            print(self.openSet[i])
+        print("En küçük index = " + str(self.indexForRemoveFromOpenSet))
+        print(self.currentPoint[2])
 
     def calc_fScore(self, point1, gScore):
         # cleveland_oh = (41.499498, -81.695391)
-        return (self.geodesic.measure(point1, self.goalPoint) * 1000)+ gScore
+        return (self.geodesic.measure(point1, self.goalPoint) * 1000) + gScore
 
     def calc_gScore(self, point1 = None, point2 = None):
-        # return self.geodesic.measure(point1, point2) * 1000
-        return self.stepSize
+        return self.geodesic.measure(point1, point2) * 1000
+        # return self.stepSize
 
     def calc_tentative_gScore(self, point1):
         tentativeGScore = self.currentPoint[1] + self.calc_gScore()
@@ -249,9 +259,25 @@ class Window(QWidget):
 
     def is_openSet_include_point(self, point1):
         result = False
-        for i in range(len(self.openSet)):
-            if self.openSet[i][0] == point1[0]:
-                result = True
+        pointNumber = 12
+        coords = []
+        coords.clear()
+        if len(self.openSet) > 0:
+            p1 = geopy.Point(point1[0], point1[1])
+            d = geopy.distance.geodesic(kilometers=(self.stepSize / 2) / 1000)
+            angle = 360 / pointNumber
+            for i in range(pointNumber):
+                coord = d.destination(point=p1, bearing=angle * i).format_decimal()
+                coord = coord.split(",")
+                x = float(coord[0])
+                y = float(coord[1])
+                coords.append((x, y))
+            poly = Polygon(coords)
+            for i in range(len(self.openSet)):
+                p2 = Point(self.openSet[i][0][0], self.openSet[i][0][0])
+                result = p2.within(poly)
+                if result:
+                    return result
         return result
 
     def calc_next_point(self, point1):
@@ -287,7 +313,7 @@ class Window(QWidget):
         coords.clear()
         if len(self.obstacleList) > 0:
             for i in range(len(self.obstacleList)):
-                p1 = Point(point1[0], point1[1])
+                p1 = geopy.Point(point1[0], point1[1])
                 d = geopy.distance.geodesic(kilometers=self.obstacleRadius / 1000)
                 obstaclePoint = geopy.Point(self.obstacleList[i][0], self.obstacleList[i][1])
                 angle = 360 / pointNumber
@@ -308,8 +334,8 @@ class Window(QWidget):
         pointNumber = 12
         coords = []
         coords.clear()
-        if len(self.obstacleList) > 0:
-            p1 = Point(newCoordinate[0], newCoordinate[1])
+        if len(self.openSet) > 0:
+            p1 = geopy.Point(newCoordinate[0], newCoordinate[1])
             d = geopy.distance.geodesic(kilometers=(self.stepSize / 2) / 1000)
             angle = 360 / pointNumber
             for i in range(pointNumber):
@@ -320,8 +346,8 @@ class Window(QWidget):
                 coords.append((x, y))
             poly = Polygon(coords)
             for i in range(len(self.openSet)):
-                p2 = Point(self.openSet[i][0][0], newCoordinate[i][0][1])
-                result = p1.within(poly)
+                p2 = Point(self.openSet[i][0][0], self.openSet[i][0][1])
+                result = p2.within(poly)
                 if result:
                     return result
         return result
@@ -337,7 +363,8 @@ class Window(QWidget):
                 currentIndex = i
         self.currentPoint = self.openSet[currentIndex]
         # print(self.currentPoint)  # x -->[0][0] y -->[0][1]
-        self.openSet.pop(currentIndex)
+        self.indexForRemoveFromOpenSet = currentIndex
+        # self.openSet.pop(currentIndex)
         if self.current_marker is not None:
             self.current_marker.removeFrom(self.map)
             time.sleep(0.1)
@@ -345,6 +372,7 @@ class Window(QWidget):
         self.current_marker = L.circleMarker(currentPoint, {"color": '#2DF909', "radius": 1})
         self.current_marker.bindPopup('current')
         self.map.addLayer(self.current_marker)
+
 
 
 app = QApplication(sys.argv)
