@@ -19,12 +19,12 @@ temp_filter = rs.temporal_filter(0.4, 20, 7)    # Temporal   - reduces temporal 
 hole_filter = rs.hole_filling_filter()
 
 
-class Camera:
+class D435:
     def __init__(self, clipping_distance_in_meters=1):
         self.pipeline = rs.pipeline()
         self.config = rs.config()
-        self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-        self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+        self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 15)
+        self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 15)
 
         # Start streaming
         self.pipeline.start(self.config)
@@ -59,6 +59,8 @@ class Camera:
 
         print(self.camera_matrix)
 
+        self.pc = rs.pointcloud()
+
         self.lastFrames = [None, None]
         # self.camera_loop()
 
@@ -80,14 +82,15 @@ class Camera:
             # filters
             # filtered = dec_filter.process(aligned_depth_frame)
             # filtered = spat_filter.process(filtered)
-            filtered = temp_filter.process(aligned_depth_frame)
+            # filtered = temp_filter.process(aligned_depth_frame)
             # filtered = hole_filter.process(filtered)
             # filtered = spat_filter.process(filtered)
 
             # Validate that both frames are valid
             if aligned_depth_frame and color_frame:
+                points = self.pc.calculate(aligned_depth_frame)
 
-                depth_image = np.asanyarray(filtered.get_data())
+                # depth_image = np.asanyarray(filtered.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
 
                 # Remove background - Set pixels further than clipping_distance to grey
@@ -97,7 +100,7 @@ class Camera:
                 # bg_removed = np.where((depth_image_3d > self.clipping_distance) | (depth_image_3d <= 0), grey_color,
                 #                       color_image)
 
-                self.lastFrames = [color_image, depth_image]
+                self.lastFrames = [color_image, points]
 
             # Render images
             # depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
