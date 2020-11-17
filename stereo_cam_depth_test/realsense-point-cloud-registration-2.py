@@ -21,6 +21,7 @@ class Runner:
         self.t265 = T265()
         self.mapBuilder = MapBuilder()
         self.kill = False
+        self.buffer = []
 
     def process_loop(self):
         self.d435.update_frames()
@@ -28,10 +29,14 @@ class Runner:
         pose = self.t265.update_frames()
         # print(frames[0].shape)
         if frames[0] is not None:
+            self.buffer.append([frames, pose])
             # print(frames[1])
             # print(dir(frames[1]))
-            self.mapBuilder.add_to_map(frames, pose)
+        if len(self.buffer) > 10:
+            for n in range(len(self.buffer)):
+                self.mapBuilder.add_to_map(self.buffer[n][0], self.buffer[n][1])
         #     cv2.imshow("color image", frames[0])
+            time.sleep(1000000)
         #
         # key = cv2.waitKey(1)
         # if key & 0xFF == ord('q') or key == 27:
@@ -43,4 +48,6 @@ if __name__ == '__main__':
     runner = Runner()
     while not runner.kill:
         runner.process_loop()
+
+    time.sleep(0.04)
 

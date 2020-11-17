@@ -3,7 +3,7 @@ import numpy as np
 # from scipy.interpolate import griddata
 from scipy.spatial.transform import Rotation as R
 from mpl_toolkits.mplot3d.axes3d import *
-
+# import pyqtgraph
 fig1 = plt.figure(1)
 
 ar = Axes3D(fig1)#fig1.gca()#
@@ -32,7 +32,7 @@ class MapBuilder:
 
         r = R.from_euler("xyz", pose[1])
 
-        for i in range(0, len(ptss), 10):
+        for i in range(0, len(ptss), 1):
             if ptss[i][2] < 0.2:
 
             # if (ptss[i][2] < 1.5 and ptss[i][1] > -1 and ptss[i][1] < 2):
@@ -83,7 +83,7 @@ class MapBuilder:
         # surf.remove()
         #
         # ar.clear()
-        plt.cla()
+        # plt.cla()
 
 
         # x = []
