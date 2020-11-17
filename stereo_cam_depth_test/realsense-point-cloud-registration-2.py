@@ -3,7 +3,8 @@
 # http://campar.in.tum.de/files/saleh/final_pres_reconstruct.pdf
 # https://github.com/filchy/slam-python
 # https://docs.opencv.org/3.4/df/ddc/classcv_1_1rgbd_1_1Odometry.html
-
+# import pyqtgraph.examples
+# pyqtgraph.examples.run()
 import math
 import time
 import cv2

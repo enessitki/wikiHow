@@ -40,7 +40,7 @@ class T265:
 
             # print("Frame #{}".format(pose.frame_number))
             # print("RPY [deg]: Roll: {0:.7f}, Pitch: {1:.7f}, Yaw: {2:.7f}".format(roll, pitch, yaw))
-            print("x: {0:.7f}, y: {0:.7f}, z: {0:.7f}".format(x, y, z))
+            # print("x: {0:.7f}, y: {0:.7f}, z: {0:.7f}".format(x, y, z))
             self.lastPose = [[x, y, z], [roll, pitch, yaw]]
             return self.lastPose
 

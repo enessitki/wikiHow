@@ -59,7 +59,11 @@ class D435:
 
         print(self.camera_matrix)
 
+        # Processing blocks
         self.pc = rs.pointcloud()
+        self.decimate = rs.decimation_filter()
+        self.decimate.set_option(rs.option.filter_magnitude, 2 ** 2)
+        self.colorizer = rs.colorizer()
 
         self.lastFrames = [None, None]
         # self.camera_loop()
@@ -68,52 +72,86 @@ class D435:
     def update_frames(self):
         # Streaming loop
         try:
-            # Get frameset of color and depth
+            # Wait for a coherent pair of frames: depth and color
             frames = self.pipeline.wait_for_frames()
-            # frames.get_depth_frame() is a 640x360 depth image
 
-            # Align the depth frame to color frame
-            aligned_frames = self.align.process(frames)
+            depth_frame = frames.get_depth_frame()
+            color_frame = frames.get_color_frame()
 
-            # Get aligned frames
-            aligned_depth_frame = aligned_frames.get_depth_frame()  # aligned_depth_frame is a 640x480 depth image
-            color_frame = aligned_frames.get_color_frame()
+            depth_frame = self.decimate.process(depth_frame)
 
-            # filters
-            # filtered = dec_filter.process(aligned_depth_frame)
-            # filtered = spat_filter.process(filtered)
-            # filtered = temp_filter.process(aligned_depth_frame)
-            # filtered = hole_filter.process(filtered)
-            # filtered = spat_filter.process(filtered)
+            # Grab new intrinsics (may be changed by decimation)
+            depth_intrinsics = rs.video_stream_profile(
+                depth_frame.profile).get_intrinsics()
+            w, h = depth_intrinsics.width, depth_intrinsics.height
 
-            # Validate that both frames are valid
-            if aligned_depth_frame and color_frame:
-                points = self.pc.calculate(aligned_depth_frame)
+            # depth_image = np.asanyarray(depth_frame.get_data())
+            color_image = np.asanyarray(color_frame.get_data())
 
-                # depth_image = np.asanyarray(filtered.get_data())
-                color_image = np.asanyarray(color_frame.get_data())
+            # depth_colormap = np.asanyarray(
+            #     self.colorizer.colorize(depth_frame).get_data())
 
-                # Remove background - Set pixels further than clipping_distance to grey
-                # grey_color = 0
-                # depth_image_3d = np.dstack(
-                #     (depth_image, depth_image, depth_image))  # depth image is 1 channel, color is 3 channels
-                # bg_removed = np.where((depth_image_3d > self.clipping_distance) | (depth_image_3d <= 0), grey_color,
-                #                       color_image)
+            # if state.color:
+            mapped_frame, color_source = color_frame, color_image
+            # else:
+            #     mapped_frame, color_source = depth_frame, depth_colormap
 
-                self.lastFrames = [color_image, points]
+            points = self.pc.calculate(depth_frame)
+            self.pc.map_to(mapped_frame)
 
-            # Render images
-            # depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
-            # images = np.hstack((bg_removed, depth_colormap))
-            # cv2.namedWindow('Align Example', cv2.WINDOW_AUTOSIZE)
-            # cv2.imshow('Align Example', images)
-            # key = cv2.waitKey(1)
-            # # Press esc or 'q' to close the image window
-            # if key & 0xFF == ord('q') or key == 27:
-            #     cv2.destroyAllWindows()
-            #     break
+            # Pointcloud data to arrays
+            v, t = points.get_vertices(), points.get_texture_coordinates()
+            verts = np.asanyarray(v).view(np.float32).reshape(-1, 3)  # xyz
+            texcoords = np.asanyarray(t).view(np.float32).reshape(-1, 2)  # uv
+            return verts, texcoords
+
+            # # Get frameset of color and depth
+            # frames = self.pipeline.wait_for_frames()
+            # # frames.get_depth_frame() is a 640x360 depth image
+            #
+            # # Align the depth frame to color frame
+            # aligned_frames = self.align.process(frames)
+            #
+            # # Get aligned frames
+            # aligned_depth_frame = aligned_frames.get_depth_frame()  # aligned_depth_frame is a 640x480 depth image
+            # color_frame = aligned_frames.get_color_frame()
+            #
+            # # filters
+            # # filtered = dec_filter.process(aligned_depth_frame)
+            # # filtered = spat_filter.process(filtered)
+            # # filtered = temp_filter.process(aligned_depth_frame)
+            # # filtered = hole_filter.process(filtered)
+            # # filtered = spat_filter.process(filtered)
+            #
+            # # Validate that both frames are valid
+            # if aligned_depth_frame and color_frame:
+            #     points = self.pc.calculate(aligned_depth_frame)
+            #
+            #     # depth_image = np.asanyarray(filtered.get_data())
+            #     color_image = np.asanyarray(color_frame.get_data())
+            #
+            #     # Remove background - Set pixels further than clipping_distance to grey
+            #     # grey_color = 0
+            #     # depth_image_3d = np.dstack(
+            #     #     (depth_image, depth_image, depth_image))  # depth image is 1 channel, color is 3 channels
+            #     # bg_removed = np.where((depth_image_3d > self.clipping_distance) | (depth_image_3d <= 0), grey_color,
+            #     #                       color_image)
+            #
+            #     self.lastFrames = [color_image, points]
+            #
+            # # Render images
+            # # depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+            # # images = np.hstack((bg_removed, depth_colormap))
+            # # cv2.namedWindow('Align Example', cv2.WINDOW_AUTOSIZE)
+            # # cv2.imshow('Align Example', images)
+            # # key = cv2.waitKey(1)
+            # # # Press esc or 'q' to close the image window
+            # # if key & 0xFF == ord('q') or key == 27:
+            # #     cv2.destroyAllWindows()
+            # #     break
         finally:
-            pass
+            return None, None
+
             # self.pipeline.stop()
 
     def get_last_frames(self):
