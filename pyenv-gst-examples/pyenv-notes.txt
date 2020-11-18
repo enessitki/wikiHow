@@ -1,0 +1,13 @@
+** pyenv notes **
+# pyenv installation
+curl https://pyenv.run | bash
+
+# usage
+export PATH="/home/esetron/.pyenv/bin:$PATH"
+
+pyenv install --list
+
+pyenv install 3.6.9
+
+# directory
+ls ~/.pyenv/versions/

@@ -1,0 +1,83 @@
+** installation **
+sudo apt-get install -y \
+libgstreamer1.0-0 \
+gstreamer1.0-alsa \
+gstreamer1.0-tools \
+gstreamer1.0-plugins-base \
+gstreamer1.0-plugins-good \
+gstreamer1.0-plugins-bad  \
+gstreamer1.0-plugins-ugly \
+gstreamer1.0-libav \
+python3-gi \
+python3-gi-cairo \
+libgirepository1.0-dev \
+gcc \
+libcairo2-dev \
+pkg-config \
+gir1.2-gtk-3.0 \
+python-gi-dev \
+git autoconf automake libtool \
+htop iperf locate v4l-utils net-tools nmap python3-pip usbutils vnstat fping
+
+sudo apt-get install -y \
+python-gst-1.0
+
+** useful things **
+# launch a pipeline
+gst-launch-1.0
+# open debug messages
+gst-launch-1.0 -v
+
+# open more debug messages
+gst-launch-1.0 --gst-debug-level 1-5
+
+# -e eos option
+gst-launch-1.0 -e
+
+# get info
+gst-inspect-1.0 "element or plugin name"
+
+# discover available streams from a url
+gst-discoverer-1.0 "url"
+
+
+** definitions **
+src => kaynak demek. her elementin bir source u vardır.
+sink => output olarak düşünülebilir. her elementin bir sink i vardır.
+! => iki element arasına konulur. (örn: videotestsrc ! xvimagesink)
+pipeline => medya manipülasyonu ayapan elemntrelerin bütünü.
+element => gstreamerdaki temel parça. elemtler birleşerek pipeline ı oluşturur.
+element => (sink -> element_işlemleri -> src)
+
+framerate = 0/1 => variable frame rate.
+
+videotestsrc : test amaçlı bir video oluşturur.
+fakesink => dipsiz kuyu.
+
+
+
+# example pipelines
+gst-launch-1.0 -v videotestsrc ! xvimagesink
+gst-launch-1.0 -v videotestsrc ! video/x-raw, format=I420, width=800, height=600, framerate=60/1 ! xvimagesink
+gst-launch-1.0 -v videotestsrc ! capsfilter caps="video/x-raw, format=I420, width=800, height=600, framerate=60/1" ! xvimagesink
+
+gst-launch-1.0 -v videotestsrc ! capsfilter caps="video/x-raw, format=ARGB, width=800, height=600, framerate=2/1" ! fakesink
+gst-launch-1.0 -v videotestsrc ! capsfilter caps="video/x-raw, format=ARGB, width=800, height=600, framerate=2/1" ! videoconvert ! xvimagesink
+
+gst-launch-1.0 -v videotestsrc ! capsfilter caps="video/x-raw, format=ARGB, width=800, height=600, framerate=2/1" ! videoconvert ! videoscale ! videoscale ! videorate ! video/x-raw,width=400 ! xvimagesink
+
+gst-launch-1.0 -v v4l2src device=/dev/video6 ! videoconvert ! xvimagesink
+
+gst-launch-1.0 -v v4l2src device=/dev/video6 ! video/x-raw, width=320, height=240, framerate=15/1 ! videoconvert ! xvimagesink
+gst-launch-1.0 -v v4l2src device=/dev/video6 ! image/jpeg, width=1024, height=768, framerate=30/1 ! jpegdec ! xvimagesink
+
+
+gst-launch-1.0 -v udpsrc port=5400 ! application/x-rtp, media=video, clock-rate=90000, encoding-name=JPEG, framerate=30/1, payload=26  ! rtpjpegdepay ! jpegparse  ! jpegdec ! xvimagesink
+
+
+gst-launch-1.0 -v v4l2src device=/dev/video6 ! image/jpeg, width=1024, height=768, framerate=30/1 ! rtpjpegpay ! udpsink host=127.0.0.1 port=5400
+gst-launch-1.0 -v udpsrc port=5400 ! application/x-rtp, media=video, clock-rate=90000, encoding-name=JPEG, framerate=30/1, payload=26  ! rtpjpegdepay ! jpegparse  ! jpegdec ! xvimagesink
+
+
+gst-launch-1.0 -v rtspsrc location="rtsp://recep:Gonca123@192.168.2.154:554/cam/realmonitor?channel=6&subtype=0" latency=0 protocols=GST_RTSP_LOWER_TRANS_UDP async-handling=true timeout=0 udp-reconnect=0 ! decodebin ! xvimagesink
+
