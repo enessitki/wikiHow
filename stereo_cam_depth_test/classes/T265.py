@@ -1,7 +1,7 @@
 import pyrealsense2 as rs
 import math
 import time
-
+# https://www.intelrealsense.com/how-to-getting-imu-data-from-d435i-and-t265/
 
 class T265:
     def __init__(self):
@@ -36,11 +36,14 @@ class T265:
             y = -data.translation.y
             z = -data.translation.z
 
-
+            # translate
+            yaw, roll, pitch = roll, pitch, yaw
 
             # print("Frame #{}".format(pose.frame_number))
-            # print("RPY [deg]: Roll: {0:.7f}, Pitch: {1:.7f}, Yaw: {2:.7f}".format(roll, pitch, yaw))
-            print("x: {0:.7f}, y: {0:.7f}, z: {0:.7f}".format(x, y, z))
+            print("RPY [deg]: Roll: {0:.7f}, Pitch: {1:.7f}, Yaw: {2:.7f}".format(roll, pitch, yaw))
+            # print(x==y==z)
+            # print("x: {0:.9f}, y: {1:.9f}, z: {2:.9f}".format(x*100, y*100, z*100))
+            # print(x, y, z)
             # self.lastPose = [[x, y, z], [roll, pitch, yaw]]
             return [x, y, z], [roll, pitch, yaw]
 

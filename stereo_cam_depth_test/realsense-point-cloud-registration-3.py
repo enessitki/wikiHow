@@ -5,6 +5,13 @@ import sys
 from classes.D435 import D435
 from classes.T265 import T265
 from scipy.spatial.transform import Rotation as R
+# notes
+# https://github.com/yoshimasa1700/mono_vo_python
+# http://campar.in.tum.de/files/saleh/final_pres_reconstruct.pdf
+# https://github.com/filchy/slam-python
+# https://docs.opencv.org/3.4/df/ddc/classcv_1_1rgbd_1_1Odometry.html
+# import pyqtgraph.examples
+# pyqtgraph.examples.run()
 
 
 class Window(gl.GLViewWidget):
@@ -16,15 +23,29 @@ class Window(gl.GLViewWidget):
         self.g = gl.GLGridItem()
         self.addItem(self.g)
 
+        self.spAxis = gl.GLScatterPlotItem(pos=np.array([[0, 0, 0],
+                                                         [1, 0, 0],
+                                                         [0, 1, 0],
+                                                         [0, 0, 1]]),
+                                           color=np.array([(1, 1, 1, 1),
+                                                           (1, 0, 0, 1),
+                                                           (0, 1, 0, 1),
+                                                           (0, 0, 1, 1)]),
+                                           size=0.2,
+                                           pxMode=False)
+        # self.spAxis.translate(0, 0, 0)
+        self.addItem(self.spAxis)
+
         self.sp = gl.GLScatterPlotItem(pxMode=False)
         # sp1 = gl.GLScatterPlotItem(pos=pos, size=size, color=color, pxMode=False)
-        self.sp.translate(1, 1, 0)
+        # self.sp.translate(0, 0, 0)
         self.addItem(self.sp)
 
         self.d435 = D435(clipping_distance_in_meters=1000)
         self.t265 = T265()
 
         self.vertsMem = np.empty((0, 3), float)
+        self.sensitivity = 0.01
 
         self.show()
 
@@ -34,13 +55,15 @@ class Window(gl.GLViewWidget):
         self.timer.start()
 
     def run(self):
-        self.vertsMem = np.array([[0.0, 0.0, 0.0]])
+        # self.vertsMem = np.array([[0.0, 0.0, 0.0]])
+        self.vertsMem = np.empty((0, 3), float)
 
         verts, texcoords, color_image = self.d435.update_frames()
         translation, rotation = self.t265.update_frames()
         translation = np.array(translation)
+        # translation = np.array([0,0, 0.10])
         # print(rotation)
-        rotation = [-1*x for x in rotation]
+        # rotation = [-1*x for x in rotation]
         # rotation = np.array(rotation)
         r = R.from_euler("xyz", rotation, degrees=True)
         # r = R.from_euler("xyz", [90, 90, 0], degrees=True)
@@ -50,9 +73,9 @@ class Window(gl.GLViewWidget):
         if verts is not None:
             # verts2 = []
             for vert in verts:
-                if vert[2] < 0.2:
+                if vert[2] < 1:
                     # print("1", vert)
-                    # vert = r.apply(vert)
+                    vert = r.apply(vert)
                     # print("2", vert)
                     # print(translation)
                     vert += translation
@@ -64,7 +87,7 @@ class Window(gl.GLViewWidget):
             # color[0] =
             color = np.array(color)
 
-            self.sp.setData(pos=self.vertsMem*20, color=color, size=0.1)
+            self.sp.setData(pos=self.vertsMem*10, color=color, size=0.1)
 
             # cw, ch = color_image.shape[:2][::-1]
             # v, u = (texcoords * (cw, ch) + 0.5).astype(np.uint32).T
