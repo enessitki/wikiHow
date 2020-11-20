@@ -103,7 +103,7 @@ class D435:
             v, t = points.get_vertices(), points.get_texture_coordinates()
             verts = np.asanyarray(v).view(np.float32).reshape(-1, 3)  # xyz
             texcoords = np.asanyarray(t).view(np.float32).reshape(-1, 2)  # uv
-            # print("---", verts)
+            # print("---", len(verts), np.amin(texcoords, axis=0), np.amax(texcoords, axis=0))
             return verts, texcoords, color_source
 
         finally:

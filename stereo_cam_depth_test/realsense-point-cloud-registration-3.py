@@ -45,7 +45,8 @@ class Window(gl.GLViewWidget):
         self.t265 = T265()
 
         self.vertsMem = np.empty((0, 3), float)
-        self.sensitivity = 0.01
+        self.inverseSensitivity = 100
+        self.filterHash = {}
 
         self.show()
 
@@ -55,39 +56,60 @@ class Window(gl.GLViewWidget):
         self.timer.start()
 
     def run(self):
-        # self.vertsMem = np.array([[0.0, 0.0, 0.0]])
         self.vertsMem = np.empty((0, 3), float)
 
         verts, texcoords, color_image = self.d435.update_frames()
         translation, rotation = self.t265.update_frames()
         translation = np.array(translation)
-        # translation = np.array([0,0, 0.10])
-        # print(rotation)
-        # rotation = [-1*x for x in rotation]
-        # rotation = np.array(rotation)
         r = R.from_euler("xyz", rotation, degrees=True)
-        # r = R.from_euler("xyz", [90, 90, 0], degrees=True)
-        # print(verts.shape)
-        # print(texcoords.shape)
-        # print(texcoords[1000])
         if verts is not None:
-            # verts2 = []
             for vert in verts:
-                if vert[2] < 1:
+                if vert[2] < 0.3:
                     # print("1", vert)
                     vert = r.apply(vert)
                     # print("2", vert)
                     # print(translation)
                     vert += translation
                     vert[1], vert[2] = vert[2], -vert[1]
+                    vert[0] = int(vert[0]*self.inverseSensitivity)
+                    vert[1] = int(vert[1]*self.inverseSensitivity)
+                    vert[2] = int(vert[2]*self.inverseSensitivity)
                     self.vertsMem = np.append(self.vertsMem, np.array([vert]), axis=0)
+                    # try:
+                    #     if self.filterHash[str(vert)] > 5:
+                    #         pass
+                        #     alone_index = 0
+                        #     for n in range(30):
+                        #         for m in range(30):
+                        #             try:
+                        #                 if self.filterHash[str(vert[n] + m -15)] > -1:
+                        #                     alone_index += 1
+                        #             except:
+                        #                 pass
+                        #     # print(alone_index)
+                        #     if alone_index > -1:
+                        #         self.vertsMem = np.append(self.vertsMem, np.array([vert]), axis=0)
+                        # else:
+                        #     self.filterHash[str(vert)] += 1
+                        #     print(self.filterHash[str(vert)])
+                    # except:
+                    #     self.filterHash[str(vert)] = 0
+                    #     self.vertsMem = np.append(self.vertsMem, np.array([vert]), axis=0)
 
             # verts2 = np.array(verts2)
-            color = [(1.0, 0.0, 0.0, 1)] + [(0.7, 0.7, 0.7, 1)] * (len(self.vertsMem) )
-            # color[0] =
-            color = np.array(color)
+            # color = [(0.7, 0.7, 0.7, 1)] * (len(self.vertsMem) )
+            color = []
+            print(color_image.shape)
+            for tex in texcoords:
+                x = int(min(max(tex[0] + 0.5, 0), 639))
+                y = int(min(max(tex[1] + 0.5, 0), 479))
+                color.append(color_image[y, x, :]/255)
 
-            self.sp.setData(pos=self.vertsMem*10, color=color, size=0.1)
+            color = np.array(color)
+            print(color)
+            print(len(self.vertsMem) )
+            if len(self.vertsMem)  > 1:
+                self.sp.setData(pos=self.vertsMem*(10/self.inverseSensitivity), color=color, size=0.1)
 
             # cw, ch = color_image.shape[:2][::-1]
             # v, u = (texcoords * (cw, ch) + 0.5).astype(np.uint32).T
