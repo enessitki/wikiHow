@@ -1,7 +1,9 @@
 import pyqtgraph.opengl as gl
 from pyqtgraph.Qt import QtCore, QtWidgets
 import numpy as np
+import cv2
 import sys
+import time
 from classes.D435 import D435
 from classes.T265 import T265
 from scipy.spatial.transform import Rotation as R
@@ -45,8 +47,12 @@ class Window(gl.GLViewWidget):
         self.t265 = T265()
 
         self.vertsMem = np.empty((0, 3), float)
-        self.inverseSensitivity = 100
         self.filterHash = {}
+        self.colorMem = np.empty((0, 4), float)
+        self.inverseSensitivity = 100
+        self.frameWidth = 640
+        self.frameHeight = 480
+        self.maxDistance = 1
 
         self.show()
 
@@ -56,92 +62,50 @@ class Window(gl.GLViewWidget):
         self.timer.start()
 
     def run(self):
-        self.vertsMem = np.empty((0, 3), float)
+        # self.vertsMem = np.empty((0, 3), float)
+        # self.colorMem = np.empty((0, 4), float)
+        t0 = time.time()
 
         verts, texcoords, color_image = self.d435.update_frames()
         translation, rotation = self.t265.update_frames()
         translation = np.array(translation)
         r = R.from_euler("xyz", rotation, degrees=True)
         if verts is not None:
-            for vert in verts:
-                if vert[2] < 0.3:
-                    # print("1", vert)
+            k = -1
+            for vert, tex in zip(verts, texcoords):
+                k += 1
+                if vert[2] < self.maxDistance:
                     vert = r.apply(vert)
-                    # print("2", vert)
-                    # print(translation)
                     vert += translation
                     vert[1], vert[2] = vert[2], -vert[1]
                     vert[0] = int(vert[0]*self.inverseSensitivity)
                     vert[1] = int(vert[1]*self.inverseSensitivity)
                     vert[2] = int(vert[2]*self.inverseSensitivity)
-                    self.vertsMem = np.append(self.vertsMem, np.array([vert]), axis=0)
-                    # try:
-                    #     if self.filterHash[str(vert)] > 5:
-                    #         pass
-                        #     alone_index = 0
-                        #     for n in range(30):
-                        #         for m in range(30):
-                        #             try:
-                        #                 if self.filterHash[str(vert[n] + m -15)] > -1:
-                        #                     alone_index += 1
-                        #             except:
-                        #                 pass
-                        #     # print(alone_index)
-                        #     if alone_index > -1:
-                        #         self.vertsMem = np.append(self.vertsMem, np.array([vert]), axis=0)
-                        # else:
-                        #     self.filterHash[str(vert)] += 1
-                        #     print(self.filterHash[str(vert)])
-                    # except:
-                    #     self.filterHash[str(vert)] = 0
-                    #     self.vertsMem = np.append(self.vertsMem, np.array([vert]), axis=0)
 
-            # verts2 = np.array(verts2)
-            # color = [(0.7, 0.7, 0.7, 1)] * (len(self.vertsMem) )
-            color = []
-            print(color_image.shape)
-            for tex in texcoords:
-                x = int(min(max(tex[0] + 0.5, 0), 639))
-                y = int(min(max(tex[1] + 0.5, 0), 479))
-                color.append(color_image[y, x, :]/255)
+                    x = int(tex[0] * self.frameWidth + 0.5)
+                    y = int(tex[1] * self.frameHeight + 0.5)
 
-            color = np.array(color)
-            print(color)
-            print(len(self.vertsMem) )
-            if len(self.vertsMem)  > 1:
-                self.sp.setData(pos=self.vertsMem*(10/self.inverseSensitivity), color=color, size=0.1)
+                    if 0 <= x < self.frameWidth and 0 <= y < self.frameHeight:
+                        rgb = np.array([x for x in np.flip(color_image[y, x, :]) / 255] + [1])
+                        # if rgb[0] > 0.8 and rgb[1] > 0.8 and rgb[2] > 0.8:
+                        #     rgb = np.array([0, 0, 0, 0])
+                    else:
+                        rgb = np.array([0, 0, 0, 0])
 
-            # cw, ch = color_image.shape[:2][::-1]
-            # v, u = (texcoords * (cw, ch) + 0.5).astype(np.uint32).T
-            # print(v.shape)
-            # clip texcoords to image
-            # np.clip(u, 0, ch - 1, out=u)
-            # np.clip(v, 0, cw - 1, out=v)
+                    key = str(vert)
+                    if key not in self.filterHash:
+                        self.vertsMem = np.append(self.vertsMem, np.array([vert]), axis=0)
+                        self.colorMem = np.append(self.colorMem, np.array([rgb]), axis=0)
+                        self.filterHash[key] = len(self.vertsMem) - 1
+                    else:
+                        self.colorMem[self.filterHash[key]] = (self.colorMem[self.filterHash[key]] + rgb*5)/6
 
-            # color = np.empty((cw, ch), dtype=np.uint32)
-            # perform uv-mapping
-            # color = []
-            #
-            # for n in range(19200):
-            #     print("-------", texcoords[n, 0], texcoords[n, 1])
-            #     _x = int(texcoords[n, 0] * cw + 0.5)
-            #     _y = int(texcoords[n, 1] * ch + 0.5)
-            #     print(_x, _y)
-            #     if 0 <= _x < cw and 0 <= _y < ch:
-            #         # r = color_image[_y, _x, 0] / 255
-            #         # g = color_image[_y, _x, 1] / 255
-            #         # b = color_image[_y, _x, 2] / 255
-            #         r, g, b = 0.7, 0.7, 0.7
-            #         a = 1
-            #         color.append((r, g, b, a))
-            # color = np.array(color)
-            # print(color, type(color), color.shape)
-    # @staticmethod
-    # def view(v):
-    #     """apply view transformation on vector array"""
-    #     return np.dot(v, state.rotation) + state.pivot - state.translation
+            if len(self.vertsMem) > 1:
+                self.sp.setData(pos=self.vertsMem*(10/self.inverseSensitivity), color=self.colorMem, size=10/self.inverseSensitivity)
 
-
+        cv2.imshow("colored", color_image)
+        # print(len(self.filterHash))
+        print(time.time() - t0)
 
 
 app = QtWidgets.QApplication(sys.argv)
