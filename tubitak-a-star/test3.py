@@ -12,13 +12,15 @@ See Wikipedia article (https://en.wikipedia.org/wiki/A*_search_algorithm)
 import math
 
 import matplotlib.pyplot as plt
+import geopy
+from geopy.distance import geodesic
 
 show_animation = True
 
 
 class AStarPlanner:
 
-    def __init__(self, ox, oy, resolution, rr):
+    def __init__(self):
         """
         Initialize grid map for a star planning
 
@@ -27,16 +29,10 @@ class AStarPlanner:
         resolution: grid resolution [m]
         rr: robot radius[m]
         """
-
-        self.resolution = resolution
-        self.rr = rr
-        self.min_x, self.min_y = 0, 0
-        self.max_x, self.max_y = 0, 0
-        self.obstacle_map = None
-        self.x_width, self.y_width = 0, 0
+        self.obstacleList =[]
         self.motion = self.get_motion_model()
-        self.calc_obstacle_map(ox, oy)
-        self.index = 0
+        self.index = []
+        self.stepSize = 10
 
     class Node:
         def __init__(self, x, y, cost, parent_index):
@@ -52,11 +48,11 @@ class AStarPlanner:
     def planning(self, sx, sy, gx, gy):
 
 
-        start_node = self.Node(x=,y=,cost=, parent_index=)
-        goal_node = self.Node(x=,y=,cost=, parent_index=)
+        start_node = self.Node(x=,y=,cost=0.0, parent_index=-1)
+        goal_node = self.Node(x=,y=,cost=0.0, parent_index=-2)
 
         open_set, closed_set = dict(), dict()
-        open_set[self.index] = start_node
+        open_set[self.calc_index(start_node)] = start_node
 
         while True:
             if len(open_set) == 0:
@@ -81,20 +77,19 @@ class AStarPlanner:
             closed_set[c_id] = current
 
             # expand_grid search grid based on motion model
-            for i, _ in enumerate(self.motion):
-                node = self.Node(current.x + self.motion[i][0],
-                                 current.y + self.motion[i][1],
-                                 current.cost + self.motion[i][2], c_id)
-                n_id = self.calc_grid_index(node)
+            for i in range(8):  # 8 adet komşu #tek sayılar karenin köşeleri çift sayılar karenin kenarlarının ortası
+                neighbor = calc_neighbor(current,i)
+                node = self.Node(x=neighbor[0], y=neighbor[1], cost=neighbor[2], parent_index=c_id)
+                n_id = self.calc_index(node)
 
                 # If the node is not safe, do nothing
-                if not node is in obstacleCircle
+                if not node is in obstacleCircle:
                     continue
 
                 if n_id in closed_set:
                     continue
 
-                if n_id not in open_set:
+                if not node is in open_set:
                     open_set[n_id] = node  # discovered a new node
                 else:
                     if open_set[n_id].cost > node.cost:
@@ -120,70 +115,38 @@ class AStarPlanner:
 
     @staticmethod
     def calc_heuristic(n1, n2):
-        w = 1.0  # weight of heuristic
-        d = w * math.hypot(n1.x - n2.x, n1.y - n2.y)
-        return d
+        # w = 1.0  # weight of heuristic
+        # d = w * math.hypot(n1.x - n2.x, n1.y - n2.y)
+        heuristic = geodesic.measure((n1.x, n1.y), (n2.x, n2.y))
+        return heuristic
 
-    def calc_grid_position(self, index, min_position):
-        """
-        calc grid position
-
-        :param index:
-        :param min_position:
-        :return:
-        """
-        pos = index * self.resolution + min_position
-        return pos
-
-    def calc_xy_index(self, position, min_pos):
-        return round((position - min_pos) / self.resolution)
-
-    def calc_grid_index(self, node):
-        return (node.y - self.min_y) * self.x_width + (node.x - self.min_x)
+    def calc_index(self, n1):
+        return (n1.x, n1.y)
 
 
-    def calc_obstacle_map(self, ox, oy):
 
-        self.min_x = round(min(ox))
-        self.min_y = round(min(oy))
-        self.max_x = round(max(ox))
-        self.max_y = round(max(oy))
-        print("min_x:", self.min_x)
-        print("min_y:", self.min_y)
-        print("max_x:", self.max_x)
-        print("max_y:", self.max_y)
 
-        self.x_width = round((self.max_x - self.min_x) / self.resolution)
-        self.y_width = round((self.max_y - self.min_y) / self.resolution)
-        print("x_width:", self.x_width)
-        print("y_width:", self.y_width)
 
-        # obstacle map generation
-        self.obstacle_map = [[False for _ in range(self.y_width)]
-                             for _ in range(self.x_width)]
-        for ix in range(self.x_width):
-            x = self.calc_grid_position(ix, self.min_x)
-            for iy in range(self.y_width):
-                y = self.calc_grid_position(iy, self.min_y)
-                for iox, ioy in zip(ox, oy):
-                    d = math.hypot(iox - x, ioy - y)
-                    if d <= self.rr:
-                        self.obstacle_map[ix][iy] = True
-                        break
 
-    @staticmethod
-    def get_motion_model():
-        # dx, dy, cost
-        motion = [[1, 0, 1],
-                  [0, 1, 1],
-                  [-1, 0, 1],
-                  [0, -1, 1],
-                  [-1, -1, math.sqrt(2)],
-                  [-1, 1, math.sqrt(2)],
-                  [1, -1, math.sqrt(2)],
-                  [1, 1, math.sqrt(2)]]
 
-        return motion
+    def calc_neighbor(self,n1,i):
+        p1 = geopy.Point(n1.x, n1.y)
+        if i%2==0:
+            step = self.stepsize
+        else:
+            step = self.stepsize*1.4
+
+        d = geopy.distance.geodesic(kilometers=step / 1000)
+        coord = d.destination(point=p1, bearing=45 * i).format_decimal()
+        coord = coord.split(",")
+        x = float(coord[0])
+        y = float(coord[1])
+        cost = n1.cost + step
+        return [x, y, cost]
+
+
+
+
 
 
 def main():
