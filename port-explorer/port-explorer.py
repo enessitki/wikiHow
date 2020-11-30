@@ -13,8 +13,6 @@ for tty in tty_list:
     print("description: ", tty.description)
     print("interface: ", tty.interface)
     print("location: ", tty.location)
-    print("check 1: ", tty.location == "3-3.1.3:1.0")
-    print("check 2: ", tty.location == "3-3.4.3:1.0")
     print("manufacturer: ", tty.manufacturer)
     print("pid: ", tty.pid)
     print("vid: ", tty.vid)
