@@ -3,6 +3,7 @@ import math
 import time
 # https://www.intelrealsense.com/how-to-getting-imu-data-from-d435i-and-t265/
 
+
 class T265:
     def __init__(self):
         self.pipe = rs.pipeline()
