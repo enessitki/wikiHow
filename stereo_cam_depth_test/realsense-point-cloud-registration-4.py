@@ -8,6 +8,7 @@ from classes.D435 import D435
 from classes.T265 import T265
 from scipy.spatial.transform import Rotation as R
 from classes.SickS300 import SickS300
+
 # notes
 # https://github.com/yoshimasa1700/mono_vo_python
 # http://campar.in.tum.de/files/saleh/final_pres_reconstruct.pdf
@@ -53,9 +54,7 @@ class Window(gl.GLViewWidget):
         self.vertsMem = np.empty((0, 3), float)
         self.filterHash = {}
         self.colorMem = np.empty((0, 4), float)
-        self.inverseSensitivity = 100
-        self.frameWidth = 640
-        self.frameHeight = 480
+        self.inverseSensitivity = 1000
 
         self.show()
 
@@ -86,15 +85,11 @@ class Window(gl.GLViewWidget):
                     vert[1] = int(vert[1]*self.inverseSensitivity)
                     vert[2] = int(vert[2]*self.inverseSensitivity)
 
-                    # x = int(tex[0] * self.frameWidth + 0.5)
-                    # y = int(tex[1] * self.frameHeight + 0.5)
+                    color = [0, 0, 0]
+                    clr = vert[2] % 9
+                    color[int(clr/3)] = clr/8
 
-                    # if 0 <= x < self.frameWidth and 0 <= y < self.frameHeight:
-                    #     rgb = np.array([x for x in np.flip(color_image[y, x, :]) / 255] + [1])
-                        # if rgb[0] > 0.8 and rgb[1] > 0.8 and rgb[2] > 0.8:
-                        #     rgb = np.array([0, 0, 0, 0])
-                    # else:
-                    rgb = np.array([1, 1, 1, 1])
+                    rgb = np.array(color + [1])
 
                     key = str(vert)
                     if key not in self.filterHash:
