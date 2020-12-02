@@ -80,7 +80,7 @@ class Window(QWidget):
         btn_obstacle = QPushButton("Obstacle")
         btn_start.clicked.connect(self.start_btn_clicked)
         btn_goal.clicked.connect(self.goal_btn_clicked)
-        btn_step.clicked.connect(self.planning)
+        btn_step.clicked.connect(self.run)
         btn_obstacle.clicked.connect(self.obstacle_btn_clicked)
 
         layout.addLayout(info_layout)
@@ -113,9 +113,10 @@ class Window(QWidget):
             self.map.removeLayer(self.startMarker)
 
     def obstacle_btn_clicked(self):
-        # self.buttonMode = "OBSTACLE"
+        self.buttonMode = "OBSTACLE"
         self.open_set.clear()
         self.open_set[self.calc_index(self.start_node)] = self.start_node
+
 
     def goal_btn_clicked(self):
         self.buttonMode = "GOAL"
@@ -127,7 +128,7 @@ class Window(QWidget):
         point = json_point["latlng"]["lat"], json_point["latlng"]["lng"]
 
         if self.buttonMode == "START":
-            startPoint = [float(point[0]), float(point[1])]
+            startPoint = [round(float(point[0]), 6), round(float(point[1]), 6)]
             self.lbl_x_coordinate_vehicle.setText("Start X : " + str(startPoint[0]))
             self.lbl_y_coordinate_vehicle.setText("Start Y : " + str(startPoint[1]))
             self.startMarker = L.circleMarker(startPoint, {"color": "#3FF00F", "radius": 5})
@@ -135,9 +136,10 @@ class Window(QWidget):
             self.map.addLayer(self.startMarker)
             self.start_node = self.Node(x=startPoint[0], y=startPoint[1], cost=0.0, parent_index=-1,
                                         poly=self.calc_polygon(startPoint[0], startPoint[1], self.stepSize))
+            ##@@print(startPoint)
 
         elif self.buttonMode == "GOAL":
-            goalPoint = [float(point[0]), float(point[1])]
+            goalPoint = [round(float(point[0]), 6), round(float(point[1]), 6)]
             self.lbl_x_coordinate_goal.setText("Goal X : " + str(goalPoint[0]))
             self.lbl_y_coordinate_goal.setText("Goal Y : " + str(goalPoint[1]))
             self.goalMarker = L.circleMarker(goalPoint, {"color": '#F0370F', "radius": 5})
@@ -147,11 +149,12 @@ class Window(QWidget):
                                        poly=self.calc_polygon(goalPoint[0], goalPoint[1], self.stepSize))
 
         elif self.buttonMode == "OBSTACLE":
-            obstaclePoint = [float(point[0]), float(point[1])]
+            obstaclePoint = [round(float(point[0]), 6), round(float(point[1]), 6)]
             self.obstacle_marker = L.circleMarker(obstaclePoint, {"color": '#F0370F', "radius": 1})
             self.obstacle_marker.bindPopup('Obstacle')
             self.map.addLayer(self.obstacle_marker)
             self.obstacleList.append(self.calc_polygon(obstaclePoint[0], obstaclePoint[1], self.obstacleRadius))
+
 
     class Node:
         def __init__(self, x, y, cost, parent_index, poly):
@@ -168,7 +171,13 @@ class Window(QWidget):
         # return n1.x, n1.y
 
     def is_goal_closer_than_step(self):
-        pass
+        result = None
+        min_dist_id = min(self.open_set,
+                   key=lambda o: self.geodesic.measure((self.open_set[o].x,self.open_set[o].y), (self.goal_node.x, self.goal_node.y)))
+        if self.stepSize >= (self.geodesic.measure((self.open_set[min_dist_id].x,self.open_set[min_dist_id].y),
+                                                  (self.goal_node.x, self.goal_node.y))*1000):
+            result = min_dist_id
+        return result
 
     def calc_neighbor(self, n1, i):
         p1 = geopy.Point(n1.x, n1.y)
@@ -180,8 +189,8 @@ class Window(QWidget):
         d = geopy.distance.geodesic(kilometers=step / 1000)
         coord = d.destination(point=p1, bearing=45 * i).format_decimal()
         coord = coord.split(",")
-        x = float(coord[0])
-        y = float(coord[1])
+        x = round(float(coord[0]), 6)
+        y = round(float(coord[1]), 6)
         cost = n1.cost + step
         return [x, y, cost]
 
@@ -239,27 +248,39 @@ class Window(QWidget):
         heuristic = self.geodesic.measure(a, b)*1000
         return heuristic
 
-    def calc_final_path(self, goal_node, closed_set):
+    def calc_final_path(self):
         # generate final course
-        rx, ry = [self.calc_grid_position(goal_node.x, self.min_x)], [
-            self.calc_grid_position(goal_node.y, self.min_y)]
-        parent_index = goal_node.parent_index
+        rx, ry = [self.goal_node.x], [self.goal_node.y]
+        parent_index = self.goal_node.parent_index
         while parent_index != -1:
-            n = closed_set[parent_index]
-            rx.append(self.calc_grid_position(n.x, self.min_x))
-            ry.append(self.calc_grid_position(n.y, self.min_y))
+            n = self.closed_set[parent_index]
+            rx.append(n.x)
+            ry.append(n.y)
             parent_index = n.parent_index
 
-        return rx, ry
+        for i in range(len(rx)-1):
+            self.draw_line(rx[i], ry[i], rx[i+1], ry[i+1])
+
+    def draw_line(self, x1, y1, x2, y2):
+        pathMarkers = L.polyline([[x1, y1], [x2, y2]], {
+            "color": "red",
+            "weight": 3,
+            "opacity": 1,
+            "lineJoin": "round",
+            "smoothFactor": 1
+        })
+        pathMarkers.addTo(self.map)
 
     def planning(self):
+        time1 = time.time()
+
         if len(self.open_set) == 0:
             print("Open set is empty..")
             return 0
 
         c_id = min(self.open_set,
                    key=lambda o: self.open_set[o].cost + self.calc_heuristic(self.goal_node, self.open_set[o]))
-        print("seçilen ID : ",c_id)
+        ##@@print("seçilen ID : ", c_id)
         current = self.open_set[c_id]
         #####################################################
         self.current_marker = L.circleMarker([current.x, current.y], {"color": "#000000", "radius": 1})
@@ -267,9 +288,20 @@ class Window(QWidget):
         self.map.addLayer(self.current_marker)
         #####################################################
 
-        if self.is_goal_closer_than_step():
+        newGoalNodeParentIndex = self.is_goal_closer_than_step()
+
+        if newGoalNodeParentIndex is not None:
             print("Find goal")
-            return 0
+            self.goal_node.parent_index = newGoalNodeParentIndex
+            self.closed_set[newGoalNodeParentIndex] = self.open_set[newGoalNodeParentIndex]
+            self.calc_final_path()
+            time2 = time.time()
+            print(time2-time1)
+            a = self.start_node.x, self.start_node.y
+            b = self.goal_node.x, self.goal_node.y
+            print(self.geodesic.measure(a, b) * 1000)
+            return 1
+
 
         del self.open_set[c_id]
         self.closed_set[c_id] = current
@@ -297,10 +329,14 @@ class Window(QWidget):
                 self.map.addLayer(self.neighbor_marker)
                 ######################################################
 
+
             # else:
             #     if open_set[n_id].cost > node.cost:
             #         # This path is the best until now. record it
             #         open_set[n_id] = node
+
+    def run(self):
+        self.planning()
 
 
 app = QApplication(sys.argv)
