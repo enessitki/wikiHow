@@ -13,7 +13,9 @@ import math
 
 import matplotlib.pyplot as plt
 
-show_animation = True
+import time
+
+show_animation = False
 
 
 class AStarPlanner:
@@ -49,6 +51,7 @@ class AStarPlanner:
                 self.cost) + "," + str(self.parent_index)
 
     def planning(self, sx, sy, gx, gy):
+        t0 = time.time()
         """
         A star path search
 
@@ -128,6 +131,7 @@ class AStarPlanner:
                         open_set[n_id] = node
 
         rx, ry = self.calc_final_path(goal_node, closed_set)
+        print("time:", time.time() - t0)
 
         return rx, ry
 
@@ -141,7 +145,6 @@ class AStarPlanner:
             rx.append(self.calc_grid_position(n.x, self.min_x))
             ry.append(self.calc_grid_position(n.y, self.min_y))
             parent_index = n.parent_index
-
         return rx, ry
 
     @staticmethod
