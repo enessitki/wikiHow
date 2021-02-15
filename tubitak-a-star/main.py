@@ -41,7 +41,7 @@ class Window(QWidget):
         self.open_set, self.closed_set = dict(), dict()
         self.obstacleList = []
 
-        self.stepSize = 1
+        self.stepSize = 3
         self.obstacleRadius = 10
         self.motion = self.get_motion_model(self.stepSize)
 
@@ -304,8 +304,8 @@ class Window(QWidget):
             parent_index = n.parent_index
         self.timePathFin = time.time()
 
-        # for i in range(len(rx) - 1):
-        #     self.draw_line(rx[i], ry[i], rx[i + 1], ry[i + 1])
+        for i in range(len(rx) - 1):
+            self.draw_line(rx[i], ry[i], rx[i + 1], ry[i + 1])
         self.timeDrawFin = time.time()
         print("Path Find Time : ", (self.timePathFin-self.timeStart))
         print("Draw Time", (self.timeDrawFin-self.timeStart))
@@ -321,15 +321,18 @@ class Window(QWidget):
         pathMarkers.addTo(self.map)
 
     def planning(self):
-        self.timeStart = time.time()
+
         time1 = time.time()
 
         if len(self.open_set) == 0:
             print("Open set is empty..")
             return 0
 
+        timeMin1 = time.time()
         c_id = min(self.open_set,
                    key=lambda o: self.open_set[o].cost + self.calc_heuristic(self.goal_node, self.open_set[o]))
+        timeMin2 = time.time()
+        print("Min bulma zamanı : ", timeMin2-timeMin1)
         ##@@print("seçilen ID : ", c_id)
         current = self.open_set[c_id]
         ##@@print("current.grid : ", current.grid)
@@ -384,6 +387,7 @@ class Window(QWidget):
                     self.open_set[n_id] = node
 
     def run(self):
+        self.timeStart = time.time()
         # self.planning()
         result = None
         while result == None:

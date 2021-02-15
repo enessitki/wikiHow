@@ -40,6 +40,13 @@ class T265:
             # translate
             yaw, roll, pitch = roll, pitch, yaw
 
+            print("x--: ", x)
+            # print("y: ", y)
+            # print("z: ", z)
+            # print("yaw: ", yaw)
+            # print("roll: ", roll)
+            # print("pitch", pitch)
+
             # print("Frame #{}".format(pose.frame_number))
             # print("RPY [deg]: Roll: {0:.7f}, Pitch: {1:.7f}, Yaw: {2:.7f}".format(roll, pitch, yaw))
             # print(x==y==z)
