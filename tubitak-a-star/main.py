@@ -41,7 +41,7 @@ class Window(QWidget):
         self.open_set, self.closed_set = dict(), dict()
         self.obstacleList = []
 
-        self.stepSize = 1
+        self.stepSize = 3
         self.obstacleRadius = 10
         self.motion = self.get_motion_model(self.stepSize)
 
