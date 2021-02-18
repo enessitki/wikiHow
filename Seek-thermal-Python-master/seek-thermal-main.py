@@ -224,8 +224,6 @@ if __name__ == '__main__':
         cv2.waitKey(1)
         data = pickle.dumps(rescale(r))
         print(data)
-
-
         a = clientsocket.sendall(struct.pack("L", len(data)) + data)
         frame = pickle.loads(data)
         print(frame)
