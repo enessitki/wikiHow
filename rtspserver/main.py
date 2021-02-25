@@ -35,7 +35,7 @@ fn(y=10, x=10)
 mainloop = GObject.MainLoop()
 
 server = GstRtspServer.RTSPServer()
-server.set_service("5400")
+server.set_service("5900")
 
 mounts = server.get_mount_points()
 
@@ -54,7 +54,8 @@ factory.set_launch('(ximagesrc ! videoconvert '
 
 mounts.add_factory("/test", factory)
 
+
 server.attach(None)
 
-print("stream ready at rtsp://127.0.0.1:5400/test")
+print("stream ready at rtsp://127.0.0.1:5900/test")
 mainloop.run()
